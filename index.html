@@ -103,7 +103,7 @@
       border-radius: 8px;
       transition: color 0.15s ease, background 0.15s ease;
       letter-spacing: 0.008em;
-      font-family: var(--font-heading);
+      font-family: var(--font-mono);
     }
 
     .nav-links a:hover {
@@ -136,7 +136,7 @@
       border-radius: var(--radius-btn);
       font-size: 14px;
       font-weight: 500;
-      font-family: var(--font-heading);
+      font-family: var(--font-mono);
       letter-spacing: 0.01em;
       cursor: pointer;
       border: none;
@@ -275,10 +275,10 @@
       transition: background-color 0.55s ease, border-color 0.55s ease;
     }
 
-    /* Blue state — triggered when "ASSETS" reaches left edge */
+    /* Blue state — triggered when "Cities" appears in viewport */
     .marquee-section.is-blue {
-      background-color: var(--color-primary);
-      border-color: var(--color-primary-dark);
+      background-color: #0C38A2;
+      border-color: #0C38A2;
     }
 
     /* Left/right edge vignette — two real divs so color can transition */
@@ -297,14 +297,12 @@
     /* Hide dark vignette once bg is blue (prevents dark smear over blue) */
     .marquee-section.is-blue .marquee-vignette { opacity: 0; }
 
-    /* Track — holds two copies for seamless loop, driven by JS */
+    /* Track — single text block, driven by scroll JS */
     .marquee-track {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
+      display: block;
       white-space: nowrap;
       will-change: transform;
-      /* No CSS animation — transform is set by scroll JS */
+      padding-left: 120px;
     }
 
     /* Single text unit — repeated twice */
@@ -317,13 +315,12 @@
 
     .marquee-text {
       font-family: var(--font-heading);
-      font-size: 240px;
+      font-size: var(--mq-font);
       font-weight: 600;
-      text-transform: uppercase;
       color: var(--color-text-primary);
       line-height: 1.0;
       white-space: nowrap;
-      letter-spacing: -4px;
+      letter-spacing: var(--mq-ls);
       user-select: none;
     }
 
@@ -445,8 +442,9 @@
     /* ─── CSS vars that scale with breakpoint ────────────────────── */
     :root {
       --mq-h:      980px;   /* marquee section height       */
-      --mq-travel: 2200px;  /* marquee scroll travel (must match JS) */
-      --mq-font:   240px;   /* marquee font size            */
+      --mq-travel: 2400px;  /* marquee scroll travel (P1 + P2)      */
+      --mq-p1:     600px;   /* phase 1 scroll (vertical rise)        */
+      --mq-font:   400px;   /* marquee font size            */
       --mq-ls:     -4px;    /* marquee letter-spacing       */
     }
 
@@ -470,8 +468,9 @@
     @media (max-width: 900px) {
       :root {
         --mq-h:      600px;
-        --mq-travel: 1400px;
-        --mq-font:   140px;
+        --mq-travel: 1600px;
+        --mq-p1:     400px;
+        --mq-font:   235px;
         --mq-ls:     -2px;
       }
 
@@ -501,8 +500,9 @@
       .marquee-sep { width: 14px; height: 14px; margin: 0 56px; top: -5px; }
 
       /* Solution */
-      .solution-section { height: 820px; }
-      .solution-info { left: 40px; bottom: 40px; top: auto; width: 86%; }
+      .solution-stack-item { height: 150vh; }
+      .solution-stack-item:last-child { height: 100vh; }
+      .solution-info { left: 40px !important; bottom: 40px; width: 86%; }
       .solution-h2 { font-size: 48px; max-width: 480px; }
       .solution-tags, .solution-desc { font-size: 14px; }
     }
@@ -513,8 +513,9 @@
     @media (max-width: 480px) {
       :root {
         --mq-h:      340px;
-        --mq-travel: 900px;
-        --mq-font:   72px;
+        --mq-travel: 1100px;
+        --mq-p1:     250px;
+        --mq-font:   118px;
         --mq-ls:     -1px;
       }
 
@@ -631,30 +632,271 @@
       .marquee-item { padding-left: 40px; }
 
       /* ── Solution ────────────────────────────────────────────── */
+      .solution-stack-item { height: auto; }
+      .solution-stack-item:last-child { height: auto; }
       .solution-section {
+        position: relative;  /* no sticky on mobile */
         height: auto;
-        min-height: 520px;
-        display: flex;
-        flex-direction: column;
+        min-height: 100vh;
       }
       .solution-bg {
-        width: 100%;
         height: 100%;
-        left: 0;
         top: 0;
-        background-size: cover;
-        background-position: center center;
       }
       .solution-info {
-        position: relative;
-        left: auto; top: auto;
-        width: 100%;
-        min-height: auto;
-        padding: 280px 20px 40px;
+        left: 20px;
+        right: 20px;
+        bottom: 40px;
+        width: auto;
       }
       .solution-h2 { font-size: 34px; letter-spacing: -0.5px; max-width: 100%; }
       .solution-tags { font-size: 13px; gap: 10px; flex-wrap: wrap; }
       .solution-desc { font-size: 13px; max-width: 100%; }
+    }
+
+    /* ─── "What We've Done" section ─────────────────────────────── */
+    .what-section {
+      background: #111111;
+      padding-top: 200px;
+      padding-bottom: 100px; /* breathing room for parallax bottom */
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .what-heading {
+      font-family: var(--font-heading);
+      font-size: 62px;
+      font-weight: 600;
+      line-height: 1.1;
+      text-transform: uppercase;
+      color: #fafafa;
+      text-align: center;
+      max-width: 834px;
+      margin: 0 auto 165px;
+      letter-spacing: -1px;
+    }
+
+    .what-columns {
+      display: flex;
+      gap: 40px;
+      padding: 0 80px;
+      width: 100%;
+      box-sizing: border-box;
+      align-items: flex-start;
+    }
+
+    /* each column: fixed 927px per Figma, left border line */
+    .what-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 927px;
+      min-width: 0;
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    #whatCol1 .what-col-texts, #whatCol1 .what-img-box,
+    #whatCol3 .what-col-texts, #whatCol3 .what-img-box { will-change: transform; }
+
+    .what-col-header {
+      display: flex;
+      align-items: flex-start;
+      padding: 10px 24px;
+      flex-shrink: 0;
+    }
+    #whatCol1 .what-col-header { height: 148px; }
+    #whatCol2 .what-col-header { height: 314px; }
+    #whatCol3 .what-col-header { height: 174px; }
+
+    .what-col-num {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 24px;
+      color: #fafafa;
+      text-transform: uppercase;
+    }
+
+    /* body area: content below the header */
+    .what-col-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-left: 24px;
+      min-height: 0;
+    }
+    /* col 2 has 80px gap between [text+image] group and button */
+    #whatCol2 .what-col-body { gap: 0; }
+
+    .what-col-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    /* col 2 wraps texts+image together with 24px internal gap */
+    .what-col-group {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex-shrink: 0;
+    }
+
+    .what-col-title {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1.1;
+      text-transform: uppercase;
+      color: #fafafa;
+      margin: 0;
+    }
+    #whatCol1 .what-col-title { max-width: 269px; }
+
+    .what-col-cat {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      line-height: 1.6;
+      color: #7b7b7b;
+      margin: 0;
+    }
+
+    /* Image container: white bg, fixed 303px, overflow clip */
+    .what-img-box {
+      background: white;
+      height: 303px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      /* right edge aligns with column (no right padding on body) */
+    }
+
+    /* ── All column images: fill the 303px box with cover */
+    .what-img-box img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    /* Unused layer wrappers — kept empty but hidden */
+    .what-img-2-bg,
+    .what-img-3-bg { display: none; }
+    .what-img-tint  { display: none; }
+
+    .what-img-3-wrap {
+      position: absolute;
+      inset: 0;
+    }
+    .what-img-3-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Button (col 2 only) */
+    .what-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 48px;
+      padding: 0 16px;
+      background: var(--color-primary);
+      border-radius: 10px;
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: white;
+      border: none;
+      cursor: pointer;
+      align-self: flex-start;
+      flex-shrink: 0;
+      margin-top: 80px;
+    }
+    .what-btn:hover { background: var(--color-primary-hover); }
+
+    /* ─── Logo / Partners section ────────────────────────────────── */
+    .logo-section {
+      background: #131313;
+      padding: 80px 0;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .logo-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 37px;
+    }
+
+    .logo-heading {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: #fafafa;
+      padding: 0 80px;
+    }
+
+    .logo-subtitle-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 80px;
+      max-width: 1440px;
+    }
+
+    .logo-subtitle-text {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: #fafafa;
+      white-space: nowrap;
+    }
+
+    .logo-subtitle-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .logo-tiles-wrapper {
+      position: relative;
+      /* row1(144) + gap(16) + row2(144) = 304 */
+      height: 304px;
+    }
+
+    .logo-row {
+      position: absolute;
+      display: flex;
+      gap: 16px;
+    }
+
+    .logo-row-1 { top: 0;      left: 189px; } /* 80px base + 109px offset */
+    .logo-row-2 { top: 160px;  left: 80px; }
+
+    .logo-tile {
+      background: #1f1f1f;
+      width: 226px;
+      height: 144px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-tile img {
+      max-width: 70%;
+      max-height: 65%;
+      object-fit: contain;
     }
 
     /* ─── Section 4: The Value (scroll-driven card animation) ───── */
@@ -670,16 +912,17 @@
      */
     .value-scroll-wrapper {
       position: relative;
-      /* 980px visible + 3 × 600px travel per card */
-      height: calc(980px + 1800px);
+      /* 1140px visible + 3 × 600px travel per card */
+      height: calc(1140px + 1800px);
       width: 100%;
+      margin-bottom: 160px;
     }
 
     .value-section {
       position: sticky;
       top: 0;
       width: 100%;
-      height: 980px;
+      height: 1140px;
       background: #111111;
       border-top: 1px solid #484848;
       border-bottom: 1px solid #484848;
@@ -777,42 +1020,40 @@
       background: rgba(255, 255, 255, 0.2);
     }
 
-    /* ─── Section 3: Solution ────────────────────────────────────── */
+    /* ─── Section 3: Solution Stack (sozo21-style) ──────────────── */
+
+    /* Each wrapper gives the sticky section scroll room so the next
+       section slides up from below before this one exits */
+    .solution-stack-item {
+      position: relative;
+      height: 180vh;   /* 100vh section + 80vh transition window */
+    }
+    .solution-stack-item:last-child {
+      height: 100vh;   /* last section: no extra room needed */
+    }
+
     .solution-section {
+      position: sticky;
+      top: 0;
       width: 100%;
-      background: #131313;
+      height: 100vh;
+      overflow: hidden;
       border-bottom: 1px solid var(--color-border);
     }
 
-    .solution-inner {
-      position: relative;
-      width: 1440px;
-      height: 980px;
-      margin: 0 auto;
-      overflow: hidden;
-    }
-
-    /*
-     * Background layer — intentionally oversized (3853×1445) and offset
-     * so the visually interesting portion is framed in the 1440×980 window.
-     * Left: -1402px, Top: -114px per design spec.
-     * JS will nudge the `top` value on scroll for parallax (Phase: POLISH).
-     */
+    /* Image oversized 60% extra — gives full parallax travel without gaps */
     .solution-bg {
       position: absolute;
       width: 100%;
-      height: 120%;  /* taller than container so parallax travel doesn't show gaps */
+      height: 160%;
+      top: -30%;
       left: 0;
-      top: -10%;  /* offset so parallax translateY has room above and below */
-      will-change: transform; /* parallax-ready */
-
-      background-image: url('Solution-2.png');
+      will-change: transform;
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
     }
 
-    /* 30% dark overlay — lifts text contrast */
     .solution-overlay {
       position: absolute;
       inset: 0;
@@ -820,19 +1061,20 @@
       z-index: 1;
     }
 
-    /* Info box — lower-left, 80px from left and bottom */
+    /* Info box — aligned to 1440px centered container, 80px from its left edge */
     .solution-info {
       position: absolute;
-      left: 80px;
+      left: max(80px, calc(50% - 640px));
       bottom: 80px;
       width: 673px;
-      min-height: 272px;
       display: flex;
       flex-direction: column;
       gap: 16px;
       align-items: flex-start;
       z-index: 2;
+      transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
+    .solution-info:hover { transform: translateY(-5px); }
 
     .solution-h2 {
       font-family: var(--font-heading);
@@ -842,12 +1084,11 @@
       color: #fafafa;
       line-height: 1.1;
       letter-spacing: -1px;
-      max-width: 544px;
+      max-width: 672px;
     }
 
     .solution-tags {
       display: flex;
-      flex-direction: row;
       align-items: center;
       gap: 16px;
       font-family: var(--font-mono);
@@ -868,6 +1109,160 @@
       line-height: 1.6;
       max-width: 673px;
       opacity: 0.85;
+    }
+
+    /* ─── Footer ─────────────────────────────────────────────────── */
+    .footer {
+      background: #111111;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 24px;
+      min-height: 452px;
+    }
+
+    .footer-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .footer-logo-area {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      width: 304px;
+      flex-shrink: 0;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 48px;
+      text-decoration: none;
+    }
+
+    .footer-logo-icon {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      background: #262626;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .footer-wordmark {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 600;
+      color: #fafafa;
+      letter-spacing: -0.3px;
+    }
+
+    .footer-tagline {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      color: #eeeeee;
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    .footer-nav-cols {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-nav-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 200px;
+    }
+
+    .footer-nav-heading {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 600;
+      color: #fafafa;
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    .footer-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .footer-nav-links a {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      color: #bababa;
+      line-height: 1.2;
+      text-decoration: none;
+    }
+
+    .footer-nav-links a:hover { color: #fafafa; }
+
+    .footer-divider {
+      width: 100%;
+      height: 0;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .footer-copyright {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      color: #b4b4b4;
+      line-height: 1.2;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .footer-social a {
+      color: #b4b4b4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease;
+    }
+
+    .footer-social a:hover { color: #fafafa; }
+
+    @media (max-width: 900px) {
+      .footer { padding: 60px 40px; min-height: auto; }
+      .footer-main { flex-direction: column; align-items: flex-start; gap: 40px; }
+      .footer-logo-area { width: 100%; }
+      .footer-copyright { white-space: normal; font-size: 14px; }
+    }
+
+    @media (max-width: 480px) {
+      .footer { padding: 40px 20px; }
+      .footer-nav-cols { flex-direction: column; }
+      .footer-nav-col { width: 100%; }
     }
   </style>
 </head>
@@ -953,14 +1348,12 @@
       <div class="marquee-vignette marquee-vignette-right" aria-hidden="true"></div>
 
       <div class="marquee-track" id="marqueeTrack" aria-hidden="true">
-        <div class="marquee-item">
-          <span class="marquee-text">connecting assets, data and operations</span>
-        </div>
+        <span class="marquee-text">We Make Cities Come Alive</span>
       </div>
 
       <!-- Screen-reader label -->
       <p style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">
-        Connecting assets, data and operations
+        We Make Cities Come Alive
       </p>
 
     </section>
@@ -1019,7 +1412,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════════
-       2. SCROLL-DRIVEN MARQUEE
+       2. SCROLL-DRIVEN MARQUEE  (two-phase: rise ↑ then slide ←)
        ═══════════════════════════════════════════════════════════════ */
     const marqueeWrapper  = document.getElementById('marqueeWrapper');
     const marqueeSection  = document.getElementById('marqueeSection');
@@ -1027,79 +1420,101 @@
 
     if (marqueeWrapper && marqueeSection && marqueeTrack) {
 
-      /* SCROLL_TRAVEL comes from the --mq-travel CSS var so it
-         stays in sync with the CSS wrapper height at every breakpoint. */
-      let SCROLL_TRAVEL = cssVar('--mq-travel') || 2200;
+      const easeOutCubicMq = t => 1 - Math.pow(1 - t, 3);
 
-      /* Cached text width — re-measured on fonts-ready and resize */
-      let marqueeTextWidth = 0;
-      let colorThreshold   = 0.42;
+      /* CSS-var driven constants — re-read on resize */
+      let SCROLL_TRAVEL  = cssVar('--mq-travel') || 2400;
+      let PHASE1_TRAVEL  = cssVar('--mq-p1')     || 600;
 
-      /* ── Measure text width + recalculate color threshold ─── */
+      /* Measured values */
+      let marqueeTextWidth       = 0;   /* total rendered width of the text */
+      let weMakeWidth            = 0;   /* width of "We Make " prefix       */
+      let weMakeCitiesComeWidth  = 0;   /* width of "We Make Cities Come "  */
+
+      /* ── Measure text + "We Make " prefix ───────────────────── */
       function measureMarquee() {
         marqueeTextWidth = marqueeTrack.scrollWidth;
+        const textEl = marqueeTrack.querySelector('.marquee-text');
+        if (!textEl || marqueeTextWidth === 0) return;
 
-        const firstText = marqueeTrack.querySelector('.marquee-text');
-        if (!firstText || marqueeTextWidth === 0) return;
-        const cs = getComputedStyle(firstText);
-
-        const probe = Object.assign(document.createElement('span'), {
-          style: [
-            'position:fixed', 'top:-9999px', 'left:0',
-            `font-size:${cs.fontSize}`,
-            `font-family:${cs.fontFamily}`,
-            `font-weight:${cs.fontWeight}`,
-            'text-transform:uppercase',
-            `letter-spacing:${cs.letterSpacing}`,
-            'white-space:nowrap',
-            'visibility:hidden',
-            'pointer-events:none',
-          ].join(';'),
+        const cs = getComputedStyle(textEl);
+        const probe = document.createElement('span');
+        Object.assign(probe.style, {
+          position:      'fixed',
+          top:           '-9999px',
+          left:          '0',
+          fontSize:      cs.fontSize,
+          fontFamily:    cs.fontFamily,
+          fontWeight:    cs.fontWeight,
+          letterSpacing: cs.letterSpacing,
+          whiteSpace:    'nowrap',
+          visibility:    'hidden',
+          pointerEvents: 'none',
         });
-        probe.textContent = 'connecting ';
+        probe.textContent = 'We Make ';
         document.body.appendChild(probe);
-        const connectingWidth = probe.offsetWidth;
+        weMakeWidth = probe.offsetWidth;
+        probe.textContent = 'We Make Cities Come ';
+        weMakeCitiesComeWidth = probe.offsetWidth;
         document.body.removeChild(probe);
-
-        /* Start: text left-edge at viewport right-edge (fully off-screen)
-           End:   text right-edge 80px from viewport right-edge          */
-        const vw     = window.innerWidth;
-        const startX = vw;
-        const endX   = vw - 80 - marqueeTextWidth;
-
-        /* "assets" hits the left viewport edge when translateX = -(connectingWidth + 97)
-           Solve for progress: p = (-assetsOffset - startX) / (endX - startX)           */
-        const assetsOffset = connectingWidth + 97;
-        colorThreshold = clamp((-assetsOffset - startX) / (endX - startX), 0, 1);
       }
 
-      /* Re-read travel + re-measure on resize (breakpoint may have changed) */
+      /* Re-read vars + re-measure on resize */
       window.addEventListener('resize', () => {
-        SCROLL_TRAVEL = cssVar('--mq-travel') || 2200;
+        SCROLL_TRAVEL = cssVar('--mq-travel') || 2400;
+        PHASE1_TRAVEL = cssVar('--mq-p1')     || 600;
         measureMarquee();
         onMarqueeScroll();
       }, { passive: true });
 
       if (document.fonts?.ready) {
-        document.fonts.ready.then(measureMarquee);
+        document.fonts.ready.then(() => { measureMarquee(); onMarqueeScroll(); });
       } else {
-        window.addEventListener('load', measureMarquee);
+        window.addEventListener('load', () => { measureMarquee(); onMarqueeScroll(); });
       }
 
       /* ── Scroll handler ───────────────────────────────────── */
       function onMarqueeScroll() {
         const wrapperTop   = marqueeWrapper.getBoundingClientRect().top + window.scrollY;
         const scrolledInto = window.scrollY - wrapperTop;
-        const progress     = clamp(scrolledInto / SCROLL_TRAVEL, 0, 1);
+        const sectionH     = cssVar('--mq-h') || 980;
 
-        /* Interpolate from off-screen-right → stopped at 80px from right edge */
-        const vw      = window.innerWidth;
-        const startX  = vw;
-        const endX    = vw - 80 - marqueeTextWidth;
-        const currentX = startX + progress * (endX - startX);
+        if (scrolledInto <= 0) {
+          /* Before animation: text hidden below section */
+          marqueeTrack.style.transform = `translateX(0px) translateY(${sectionH}px)`;
+          marqueeSection.classList.remove('is-blue');
+          return;
+        }
 
-        marqueeTrack.style.transform = `translateX(${currentX}px)`;
-        marqueeSection.classList.toggle('is-blue', progress >= colorThreshold);
+        if (scrolledInto < PHASE1_TRAVEL) {
+          /* ── Phase 1: rise from below to vertical center ── */
+          const p1 = clamp(scrolledInto / PHASE1_TRAVEL, 0, 1);
+          const e1 = easeOutCubicMq(p1);
+          /* start: below the section (sectionH px below natural position) */
+          const currentY = sectionH * (1 - e1);
+          marqueeTrack.style.transform = `translateX(0px) translateY(${currentY}px)`;
+          marqueeSection.classList.remove('is-blue');
+
+        } else {
+          /* ── Phase 2: slide left across viewport ── */
+          const phase2Scrolled = scrolledInto - PHASE1_TRAVEL;
+          const phase2Total    = Math.max(1, SCROLL_TRAVEL - PHASE1_TRAVEL);
+          const p2  = clamp(phase2Scrolled / phase2Total, 0, 1);
+          const e2  = easeOutCubicMq(p2);
+
+          /* Text starts at X=0 (left-aligned), slides to fully off-screen left */
+          const endX    = -(marqueeTextWidth || window.innerWidth * 3);
+          const currentX = e2 * endX;
+
+          marqueeTrack.style.transform = `translateX(${currentX}px) translateY(0px)`;
+
+          /* Color triggers based on words entering viewport from the right */
+          const vw          = window.innerWidth;
+          const trackPad    = parseFloat(getComputedStyle(marqueeTrack).paddingLeft) || 0;
+          const citiesAppears = weMakeWidth > 0           && currentX <= vw - trackPad - weMakeWidth;
+          const aliveAppears  = weMakeCitiesComeWidth > 0 && currentX <= vw - trackPad - weMakeCitiesComeWidth;
+          marqueeSection.classList.toggle('is-blue', citiesAppears && !aliveAppears);
+        }
       }
 
       window.addEventListener('scroll', onMarqueeScroll, { passive: true });
@@ -1129,9 +1544,8 @@
        ═══════════════════════════════════════════════════════════════ */
     if (reduceMotion) return;
 
-    const heroVisual   = document.querySelector('.hero-visual');
-    const solutionBg   = document.getElementById('solutionBg');
-    const solutionSect = document.querySelector('.solution-section');
+    const heroVisual     = document.querySelector('.hero-visual');
+    const solutionItems  = Array.from(document.querySelectorAll('.solution-stack-item'));
 
     /* Wait for entry animations to finish before applying parallax
        (longest: delay 600ms + duration 800ms = 1400ms) */
@@ -1155,16 +1569,25 @@
         }
       }
 
-      /* ── Solution bg parallax (desktop + tablet) ───────────── */
-      if (solutionBg && solutionSect) {
+      /* ── Solution bg + info parallax ── */
+      solutionItems.forEach(item => {
+        const bg   = item.querySelector('.solution-bg');
+        const info = item.querySelector('.solution-info');
+        const rect      = item.getBoundingClientRect();
+        const itemH     = item.offsetHeight;
+        const viewH     = window.innerHeight;
+        const scrollRange = Math.max(1, itemH - viewH);
+        const scrolled  = Math.max(0, -rect.top);
+        const progress  = Math.min(1, scrolled / scrollRange);
+
         if (!mobile) {
-          const rect   = solutionSect.getBoundingClientRect();
-          const center = rect.top + rect.height / 2 - window.innerHeight / 2;
-          solutionBg.style.transform = `translateY(${center * 0.28}px)`;
+          if (bg)   bg.style.transform   = `translateY(${progress * -30}%)`;
+          if (info) info.style.transform = `translateY(${progress * -260}px)`;
         } else {
-          solutionBg.style.transform = '';
+          if (bg)   bg.style.transform   = '';
+          if (info) info.style.transform = '';
         }
-      }
+      });
 
       ticking = false;
     }
@@ -1183,38 +1606,201 @@
   })();
   </script>
 
-  <!-- ── Section 3: Solution ── -->
-  <section class="solution-section" aria-labelledby="solution-title">
-    <div class="solution-inner">
+  <!-- ── Section 3: Solution Stack (sozo21 sticky effect) ── -->
+  <div class="solution-stack">
 
-      <!-- Background image -->
-      <div class="solution-bg" id="solutionBg" aria-hidden="true"></div>
-
-      <!-- Dark overlay -->
-      <div class="solution-overlay" aria-hidden="true"></div>
-
-      <!-- Text: 80px from left, 80px from bottom -->
-      <div class="solution-info">
-
-        <h2 class="solution-h2 anim-observe" id="solution-title">
-          See Everything,<br>In Real Time
-        </h2>
-
-        <div class="solution-tags anim-observe" role="list" aria-label="Features"
-             style="transition-delay: 120ms">
-          <span role="listitem">TWIN EDITOR</span>
-          <span class="solution-tag-sep" aria-hidden="true">|</span>
-          <span role="listitem">OPS CENTRE</span>
-          <span class="solution-tag-sep" aria-hidden="true">|</span>
-          <span role="listitem">24K CORE</span>
+    <!-- Solution 1 -->
+    <div class="solution-stack-item">
+      <section class="solution-section" aria-labelledby="solution-title-1" style="z-index:3">
+        <div class="solution-bg" style="background-image: url('Section Solution 1.png')" aria-hidden="true"></div>
+        <div class="solution-overlay" aria-hidden="true"></div>
+        <div class="solution-info">
+          <h2 class="solution-h2" id="solution-title-1">
+            Visualize Your World Digitally
+          </h2>
+          <div class="solution-tags" role="list" aria-label="Products">
+            <span role="listitem">TILEHUB</span>
+            <span class="solution-tag-sep" aria-hidden="true">|</span>
+            <span role="listitem">TWIN STUDIO</span>
+          </div>
+          <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+            From spatial data to 3D tilesets — no geospatial expertise needed.
+            TileHub streamlines tileset creation from upload to generation,
+            feeding directly into Twin Studio for data mapping.
+          </p>
         </div>
+      </section>
+    </div>
 
-        <p class="solution-desc anim-observe" style="transition-delay: 240ms">
-          Connect live data, systems, and assets into one operational layer —
-          giving teams real-time visibility, situational awareness, and faster
-          response across the built environment.
-        </p>
+    <!-- Solution 2 -->
+    <div class="solution-stack-item">
+      <section class="solution-section" aria-labelledby="solution-title-2" style="z-index:4">
+        <div class="solution-bg" style="background-image: url('Section Solution 2.png')" aria-hidden="true"></div>
+        <div class="solution-overlay" style="background: rgba(0,0,0,0.60)" aria-hidden="true"></div>
+        <div class="solution-info">
+          <h2 class="solution-h2" id="solution-title-2">
+            See Everything,<br>In Real Time
+          </h2>
+          <div class="solution-tags" role="list" aria-label="Products">
+            <span role="listitem">TWIN STUDIO</span>
+            <span class="solution-tag-sep" aria-hidden="true">|</span>
+            <span role="listitem">OPS CENTRE</span>
+            <span class="solution-tag-sep" aria-hidden="true">|</span>
+            <span role="listitem">24K CORE</span>
+          </div>
+          <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+            Connect live data, systems, and assets into one operational layer —
+            giving teams real-time visibility, situational awareness, and faster
+            response across the built environment.
+          </p>
+        </div>
+      </section>
+    </div>
 
+    <!-- Solution 3 -->
+    <div class="solution-stack-item">
+      <section class="solution-section" aria-labelledby="solution-title-3" style="z-index:5">
+        <div class="solution-bg" style="background-image: url('Section Solution 3.png')" aria-hidden="true"></div>
+        <div class="solution-overlay" style="background: rgba(0,0,0,0.20)" aria-hidden="true"></div>
+        <div class="solution-info">
+          <h2 class="solution-h2" id="solution-title-3">
+            Deliver Projects<br>with Clarity
+          </h2>
+          <div class="solution-tags" role="list" aria-label="Products">
+            <span role="listitem">AXIONE</span>
+            <span class="solution-tag-sep" aria-hidden="true">|</span>
+            <span role="listitem">TWINBOT</span>
+            <span class="solution-tag-sep" aria-hidden="true">|</span>
+            <span role="listitem">URBAN LIBRARY</span>
+          </div>
+          <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+            Equip built-environment teams with the right visual language,
+            connected twin data, and AI-powered intelligence to manage
+            construction progress, costs, risks, and smarter delivery.
+          </p>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <!-- ── Section: What We've Done ── -->
+  <section class="what-section">
+    <h2 class="what-heading">What we've done</h2>
+
+    <div class="what-columns">
+
+      <!-- Column 01: Green Building Initiative -->
+      <div class="what-col" id="whatCol1">
+        <div class="what-col-header">
+          <span class="what-col-num">01</span>
+        </div>
+        <div class="what-col-body">
+          <div class="what-col-texts">
+            <h3 class="what-col-title">Green Building Initiative</h3>
+            <p class="what-col-cat">CITIES &amp; DISTRICTS</p>
+          </div>
+          <div class="what-img-box">
+            <img class="what-img-1"
+                 src="Image left.png"
+                 alt="Green Building Initiative">
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 02: Security Ops -->
+      <div class="what-col" id="whatCol2">
+        <div class="what-col-header">
+          <span class="what-col-num">02</span>
+        </div>
+        <div class="what-col-body">
+          <!-- text + image grouped with 24px gap -->
+          <div class="what-col-group">
+            <div class="what-col-texts">
+              <h3 class="what-col-title">SECURITY OPS</h3>
+              <p class="what-col-cat">DEFENSE &amp; SECURITY</p>
+            </div>
+            <div class="what-img-box">
+              <!-- bg layer: imgContentImage1 + blue tint -->
+              <div class="what-img-2-bg">
+                <img src="http://localhost:3845/assets/ac82b882d66f992ac3838d4b123cf9c6abac2539.png" alt="">
+                <div class="what-img-tint"></div>
+              </div>
+              <!-- fg layer: Image center -->
+              <img class="what-img-2-fg"
+                   src="Image center.png"
+                   alt="Security Ops">
+            </div>
+          </div>
+          <!-- button: 80px below image group -->
+          <button class="what-btn">View all usecases</button>
+        </div>
+      </div>
+
+      <!-- Column 03: Facility Ops Management -->
+      <div class="what-col" id="whatCol3">
+        <div class="what-col-header">
+          <span class="what-col-num">03</span>
+        </div>
+        <div class="what-col-body">
+          <div class="what-col-texts">
+            <h3 class="what-col-title">FACILTIY OPS MANAGEMENT</h3>
+            <p class="what-col-cat">TRANSPORT</p>
+          </div>
+          <div class="what-img-box">
+            <!-- bg layer: same imgContentImage1 + blue tint -->
+            <div class="what-img-3-bg">
+              <img src="http://localhost:3845/assets/ac82b882d66f992ac3838d4b123cf9c6abac2539.png" alt="">
+              <div class="what-img-tint"></div>
+            </div>
+            <!-- fg layer: imgContentImage3 in 635×325 offset wrapper -->
+            <div class="what-img-3-wrap">
+              <img src="Image right.png"
+                   alt="Facility Ops Management">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Section: Logo / Partners ── -->
+  <section class="logo-section">
+    <div class="logo-inner">
+
+      <div class="logo-heading">
+        <div>YEARS OF PROJECTS,</div>
+        <div>PARTNERSHIP AND TRUST</div>
+      </div>
+
+      <div class="logo-subtitle-row">
+        <span class="logo-subtitle-text">FROM DATA</span>
+        <div class="logo-subtitle-line"></div>
+        <span class="logo-subtitle-text">TO MANAGEMENT</span>
+      </div>
+
+      <div class="logo-tiles-wrapper">
+        <!-- Row 1 — offset 109px right -->
+        <div class="logo-row logo-row-1">
+          <div class="logo-tile"><img src="http://localhost:3845/assets/a347dcc7efd0bdc3a5844e9b8b8bdfe0fabb4553.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/9ea9da1159cbc96de174192e27e65e681c048f62.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/ad22143d2815cb54420f26684049b7fa71a99965.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/e3c4915e13046d5315cef669b050102efc20ca4d.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/a1e78ef7c5fa946c63b4f656fef9f9ad32071c9f.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/c2f48986e5d61732d2ed49682eab29578187515f.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/a347dcc7efd0bdc3a5844e9b8b8bdfe0fabb4553.png" alt="Partner logo"></div>
+        </div>
+        <!-- Row 2 — normal position -->
+        <div class="logo-row logo-row-2">
+          <div class="logo-tile"><img src="http://localhost:3845/assets/e3c4915e13046d5315cef669b050102efc20ca4d.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/c2f48986e5d61732d2ed49682eab29578187515f.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/a1e78ef7c5fa946c63b4f656fef9f9ad32071c9f.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/9ea9da1159cbc96de174192e27e65e681c048f62.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/a347dcc7efd0bdc3a5844e9b8b8bdfe0fabb4553.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/ad22143d2815cb54420f26684049b7fa71a99965.png" alt="Partner logo"></div>
+          <div class="logo-tile"><img src="http://localhost:3845/assets/a347dcc7efd0bdc3a5844e9b8b8bdfe0fabb4553.png" alt="Partner logo"></div>
+        </div>
       </div>
 
     </div>
@@ -1268,6 +1854,53 @@
       </div>
     </section>
   </div>
+
+  <!-- ── What section: text + image parallax at different speeds ── -->
+  <script>
+  (() => {
+    'use strict';
+    const section = document.querySelector('.what-section');
+    if (!section) return;
+
+    /*
+     * Col 1: text and image both move UP — image 2.6× faster than text
+     * Col 3: text and image both move DOWN — image 2.6× faster than text
+     *        Col 3 travels further overall than col 1 → visible speed diff
+     * p=0.5 (section centred in viewport) → all translateY = 0
+     */
+    const targets = [
+      { el: document.querySelector('#whatCol1 .what-col-texts'), travel: -200  },
+      { el: document.querySelector('#whatCol1 .what-img-box'),   travel: -520  },
+      { el: document.querySelector('#whatCol3 .what-col-texts'), travel:  280  },
+      { el: document.querySelector('#whatCol3 .what-img-box'),   travel:  720  },
+    ].filter(t => t.el);
+
+    if (!targets.length) return;
+
+    let sectionAbsTop = 0, sectionH = 0;
+
+    function measure() {
+      sectionAbsTop = section.getBoundingClientRect().top + window.scrollY;
+      sectionH      = section.offsetHeight;
+    }
+
+    function update() {
+      const vh  = window.innerHeight;
+      const raw = (window.scrollY + vh - sectionAbsTop) / (vh + sectionH);
+      const p   = Math.max(0, Math.min(1, raw));
+      const c   = p - 0.5;
+
+      targets.forEach(({ el, travel }) => {
+        el.style.transform = `translateY(${c * travel}px)`;
+      });
+    }
+
+    measure();
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', () => { measure(); update(); }, { passive: true });
+  })();
+  </script>
 
   <!-- ── Value section: scroll-driven card slide-in ── -->
   <script>
@@ -1358,6 +1991,74 @@
     window.addEventListener('scroll', update, { passive: true });
   })();
   </script>
+
+  <!-- ── Footer ── -->
+  <footer class="footer" aria-label="Site footer">
+
+    <div class="footer-main">
+
+      <!-- Logo + tagline -->
+      <div class="footer-logo-area">
+        <a href="/" class="footer-logo" aria-label="Infralink — home">
+          <div class="footer-logo-icon">
+            <svg width="28" height="28" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+              <path d="M15 7L21 13V17L15 23L9 17V13L15 7Z" fill="none" stroke="white" stroke-width="1.5" stroke-opacity="0.3"/>
+              <path d="M8.5 15L12.5 11L16.5 15L12.5 19L8.5 15Z" fill="white" fill-opacity="0.92"/>
+              <circle cx="21" cy="10" r="2.5" fill="#93c5fd"/>
+            </svg>
+          </div>
+          <span class="footer-wordmark">Infralink</span>
+        </a>
+        <p class="footer-tagline">Real Impact,<br>Made Together</p>
+      </div>
+
+      <!-- Navigation columns -->
+      <div class="footer-nav-cols">
+        <div class="footer-nav-col">
+          <p class="footer-nav-heading">Company</p>
+          <nav class="footer-nav-links" aria-label="Company links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/contact">Get in touch</a>
+          </nav>
+        </div>
+        <div class="footer-nav-col">
+          <p class="footer-nav-heading">Products</p>
+          <nav class="footer-nav-links" aria-label="Products links">
+            <a href="/products/ops-center">Ops Center</a>
+            <a href="/products/tile-hub">Tile Hub</a>
+            <a href="/products/twin-editor">Twin Editor</a>
+            <a href="/products/urban-library">Urban Library</a>
+          </nav>
+        </div>
+      </div>
+
+    </div>
+
+    <hr class="footer-divider" aria-hidden="true">
+
+    <div class="footer-bottom">
+      <p class="footer-copyright">Surbana Technologies Pte. Ltd. ©2026. All right reserved</p>
+      <div class="footer-social" aria-label="Social media links">
+        <a href="#" aria-label="Instagram">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2.5" y="2.5" width="15" height="15" rx="4" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="14" cy="6" r="1" fill="currentColor"/>
+          </svg>
+        </a>
+        <a href="#" aria-label="LinkedIn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2.5" y="2.5" width="15" height="15" rx="2.5" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M6.5 8.5V14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="6.5" cy="6.25" r="0.85" fill="currentColor"/>
+            <path d="M9.5 14V11C9.5 9.61929 10.6193 8.5 12 8.5C13.3807 8.5 14.5 9.61929 14.5 11V14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+  </footer>
 
 </body>
 </html>
