@@ -45,7 +45,7 @@
       width: 100%;
       height: 980px;
       background: var(--color-bg);
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 0px solid var(--color-border);
       overflow: hidden;
     }
 
@@ -302,7 +302,6 @@
       display: block;
       white-space: nowrap;
       will-change: transform;
-      padding-left: 120px;
     }
 
     /* Single text unit — repeated twice */
@@ -434,8 +433,8 @@
 
     /* ─── CSS vars that scale with breakpoint ────────────────────── */
     :root {
-      --mq-h:      980px;   /* marquee section height       */
-      --mq-travel: 2400px;  /* marquee scroll travel (P1 + P2)      */
+      --mq-h: 100vh;   /* marquee section height       */
+      --mq-travel: 600px;  /* marquee scroll travel (P1 + P2)      */
       --mq-p1:     600px;   /* phase 1 scroll (vertical rise)        */
       --mq-font:   400px;   /* marquee font size            */
       --mq-ls:     -4px;    /* marquee letter-spacing       */
@@ -493,9 +492,7 @@
       .marquee-sep { width: 14px; height: 14px; margin: 0 56px; top: -5px; }
 
       /* Solution */
-      .solution-stack-item { height: 150vh; }
-      .solution-stack-item:last-child { height: 100vh; }
-      .solution-info { left: 40px !important; bottom: 40px; width: 86%; }
+      .solution-info { left: 40px !important; width: 86%; }
       .solution-h2 { font-size: 48px; max-width: 480px; }
       .solution-tags, .solution-desc { font-size: 14px; }
     }
@@ -625,8 +622,7 @@
       .marquee-item { padding-left: 40px; }
 
       /* ── Solution ────────────────────────────────────────────── */
-      .solution-stack-item { height: auto; }
-      .solution-stack-item:last-child { height: auto; }
+      .solution-gap { display: none; }
       .solution-section {
         position: relative;  /* no sticky on mobile */
         height: auto;
@@ -641,6 +637,7 @@
         right: 20px;
         bottom: 40px;
         width: auto;
+        transform: none;
       }
       .solution-h2 { font-size: 34px; letter-spacing: -0.5px; max-width: 100%; }
       .solution-tags { font-size: 13px; gap: 10px; flex-wrap: wrap; }
@@ -1049,36 +1046,32 @@
 
     /* ─── Section 3: Solution Stack (sozo21-style) ──────────────── */
 
-    /* Each wrapper gives the sticky section scroll room so the next
-       section slides up from below before this one exits */
-    .solution-stack-item {
+    /* Plain stacked sections — no sticky, no parallax, no animation. */
+    .solution-stack {
       position: relative;
-      height: 180vh;   /* 100vh section + 80vh transition window */
-    }
-    .solution-stack-item:last-child {
-      height: 100vh;   /* last section: no extra room needed */
     }
 
     .solution-section {
-      position: sticky;
-      top: 0;
+      position: relative;
       width: 100%;
       height: 100vh;
       overflow: hidden;
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 0;
     }
 
-    /* Image oversized 60% extra — gives full parallax travel without gaps */
+    .solution-gap {
+      display: none;
+    }
+
     .solution-bg {
       position: absolute;
+      inset: 0;
       width: 100%;
-      height: 160%;
-      top: -30%;
-      left: 0;
-      will-change: transform;
+      height: 100%;
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
+      z-index: 0;
     }
 
     .solution-overlay {
@@ -1088,11 +1081,10 @@
       z-index: 1;
     }
 
-    /* Info box — aligned to 1440px centered container, 80px from its left edge */
     .solution-info {
       position: absolute;
       left: max(80px, calc(50% - 640px));
-      bottom: 80px;
+      bottom: 100px;
       width: 673px;
       display: flex;
       flex-direction: column;
@@ -1445,18 +1437,12 @@
 
     if (marqueeWrapper && marqueeSection && marqueeTrack) {
 
-      const easeOutCubicMq = t => 1 - Math.pow(1 - t, 3);
-
-      /* CSS-var driven constants — re-read on resize */
-      let SCROLL_TRAVEL  = cssVar('--mq-travel') || 2400;
-      let PHASE1_TRAVEL  = cssVar('--mq-p1')     || 600;
-
       /* Measured values */
-      let marqueeTextWidth       = 0;   /* total rendered width of the text */
-      let weMakeWidth            = 0;   /* width of "We Make " prefix       */
-      let weMakeCitiesComeWidth  = 0;   /* width of "We Make Cities Come "  */
+      let marqueeTextWidth       = 0;   /* total rendered width of the text  */
+      let weMakeWidth            = 0;   /* width of "We Make " prefix        */
+      let weMakeCitiesComeWidth  = 0;   /* width of "We Make Cities Come "   */
 
-      /* ── Measure text + "We Make " prefix ───────────────────── */
+      /* ── Measure text + word-prefix widths, set wrapper height ─ */
       function measureMarquee() {
         marqueeTextWidth = marqueeTrack.scrollWidth;
         const textEl = marqueeTrack.querySelector('.marquee-text');
@@ -1482,12 +1468,16 @@
         probe.textContent = 'We Make Cities Come ';
         weMakeCitiesComeWidth = probe.offsetWidth;
         document.body.removeChild(probe);
+
+        /* Wrapper height = viewport + horizontal travel distance.
+           Travel = textWidth + 80 (start off-screen right → end with
+           text's right edge 80px from viewport right). */
+        const travel = marqueeTextWidth + 80;
+        marqueeWrapper.style.height = (window.innerHeight + travel) + 'px';
       }
 
-      /* Re-read vars + re-measure on resize */
+      /* Re-measure on resize */
       window.addEventListener('resize', () => {
-        SCROLL_TRAVEL = cssVar('--mq-travel') || 2400;
-        PHASE1_TRAVEL = cssVar('--mq-p1')     || 600;
         measureMarquee();
         onMarqueeScroll();
       }, { passive: true });
@@ -1498,48 +1488,32 @@
         window.addEventListener('load', () => { measureMarquee(); onMarqueeScroll(); });
       }
 
-      /* ── Scroll handler ───────────────────────────────────── */
+      /* ── Scroll handler ────────────────────────────────────────
+         Single-phase horizontal scroll:
+         - Text vertically centered (via flex align-items on section)
+         - Text slides from X=vw (off-screen right) to X=vw-80-textWidth
+           (right edge of "Alive" 80px from viewport right edge)
+         - bg → #0C38A2 while "Cities" visible and "Alive" not yet in view
+         - Sticky releases naturally → next section slides up          */
       function onMarqueeScroll() {
-        const wrapperTop   = marqueeWrapper.getBoundingClientRect().top + window.scrollY;
-        const scrolledInto = window.scrollY - wrapperTop;
-        const sectionH     = cssVar('--mq-h') || 980;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const scrollDist = Math.max(1, marqueeWrapper.offsetHeight - vh);
+        const scrolled   = Math.max(0, -marqueeWrapper.getBoundingClientRect().top);
+        const progress   = clamp(scrolled / scrollDist, 0, 1);
 
-        if (scrolledInto <= 0) {
-          /* Before animation: text hidden below section */
-          marqueeTrack.style.transform = `translateX(0px) translateY(${sectionH}px)`;
-          marqueeSection.classList.remove('is-blue');
-          return;
-        }
+        const startX = vw;
+        const endX   = vw - 80 - marqueeTextWidth;
+        const currentX = startX + (endX - startX) * progress;
 
-        if (scrolledInto < PHASE1_TRAVEL) {
-          /* ── Phase 1: rise from below to vertical center ── */
-          const p1 = clamp(scrolledInto / PHASE1_TRAVEL, 0, 1);
-          const e1 = easeOutCubicMq(p1);
-          /* start: below the section (sectionH px below natural position) */
-          const currentY = sectionH * (1 - e1);
-          marqueeTrack.style.transform = `translateX(0px) translateY(${currentY}px)`;
-          marqueeSection.classList.remove('is-blue');
+        marqueeTrack.style.transform = `translateX(${currentX}px)`;
 
-        } else {
-          /* ── Phase 2: slide left across viewport ── */
-          const phase2Scrolled = scrolledInto - PHASE1_TRAVEL;
-          const phase2Total    = Math.max(1, SCROLL_TRAVEL - PHASE1_TRAVEL);
-          const p2  = clamp(phase2Scrolled / phase2Total, 0, 1);
-          const e2  = easeOutCubicMq(p2);
-
-          /* Text starts at X=0 (left-aligned), slides to fully off-screen left */
-          const endX    = -(marqueeTextWidth || window.innerWidth * 3);
-          const currentX = e2 * endX;
-
-          marqueeTrack.style.transform = `translateX(${currentX}px) translateY(0px)`;
-
-          /* Color triggers based on words entering viewport from the right */
-          const vw          = window.innerWidth;
-          const trackPad    = parseFloat(getComputedStyle(marqueeTrack).paddingLeft) || 0;
-          const citiesAppears = weMakeWidth > 0           && currentX <= vw - trackPad - weMakeWidth;
-          const aliveAppears  = weMakeCitiesComeWidth > 0 && currentX <= vw - trackPad - weMakeCitiesComeWidth;
-          marqueeSection.classList.toggle('is-blue', citiesAppears && !aliveAppears);
-        }
+        /* Color triggers: check left edge of each word against viewport right */
+        const citiesLeft = currentX + weMakeWidth;
+        const aliveLeft  = currentX + weMakeCitiesComeWidth;
+        const citiesVisible = weMakeWidth > 0           && citiesLeft < vw;
+        const aliveVisible  = weMakeCitiesComeWidth > 0 && aliveLeft  < vw;
+        marqueeSection.classList.toggle('is-blue', citiesVisible && !aliveVisible);
       }
 
       window.addEventListener('scroll', onMarqueeScroll, { passive: true });
@@ -1615,77 +1589,71 @@
   <div class="solution-stack">
 
     <!-- Solution 1 -->
-    <div class="solution-stack-item">
-      <section class="solution-section" aria-labelledby="solution-title-1" style="z-index:3">
-        <div class="solution-bg" style="background-image: url('Section Solution 1.png')" aria-hidden="true"></div>
-        <div class="solution-overlay" aria-hidden="true"></div>
-        <div class="solution-info">
-          <h2 class="solution-h2" id="solution-title-1">
-            Visualize Your World Digitally
-          </h2>
-          <div class="solution-tags" role="list" aria-label="Products">
-            <span role="listitem">TILEHUB</span>
-            <span class="solution-tag-sep" aria-hidden="true">|</span>
-            <span role="listitem">TWIN STUDIO</span>
-          </div>
-          <p class="solution-desc anim-observe" style="transition-delay: 240ms">
-            From spatial data to 3D tilesets — no geospatial expertise needed.
-            TileHub streamlines tileset creation from upload to generation,
-            feeding directly into Twin Studio for data mapping.
-          </p>
+    <section class="solution-section" aria-labelledby="solution-title-1" style="z-index:3">
+      <div class="solution-bg" style="background-image: url('Section Solution 1.png')" aria-hidden="true"></div>
+      <div class="solution-overlay" aria-hidden="true"></div>
+      <div class="solution-info">
+        <h2 class="solution-h2" id="solution-title-1">
+          Visualize Your World Digitally
+        </h2>
+        <div class="solution-tags" role="list" aria-label="Products">
+          <span role="listitem">TILEHUB</span>
+          <span class="solution-tag-sep" aria-hidden="true">|</span>
+          <span role="listitem">TWIN STUDIO</span>
         </div>
-      </section>
-    </div>
+        <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+          From spatial data to 3D tilesets — no geospatial expertise needed.
+          TileHub streamlines tileset creation from upload to generation,
+          feeding directly into Twin Studio for data mapping.
+        </p>
+      </div>
+    </section>
 
     <!-- Solution 2 -->
-    <div class="solution-stack-item">
-      <section class="solution-section" aria-labelledby="solution-title-2" style="z-index:4">
-        <div class="solution-bg" style="background-image: url('Section Solution 2.png')" aria-hidden="true"></div>
-        <div class="solution-overlay" style="background: rgba(0,0,0,0.60)" aria-hidden="true"></div>
-        <div class="solution-info">
-          <h2 class="solution-h2" id="solution-title-2">
-            See Everything,<br>In Real Time
-          </h2>
-          <div class="solution-tags" role="list" aria-label="Products">
-            <span role="listitem">TWIN STUDIO</span>
-            <span class="solution-tag-sep" aria-hidden="true">|</span>
-            <span role="listitem">OPS CENTRE</span>
-            <span class="solution-tag-sep" aria-hidden="true">|</span>
-            <span role="listitem">24K CORE</span>
-          </div>
-          <p class="solution-desc anim-observe" style="transition-delay: 240ms">
-            Connect live data, systems, and assets into one operational layer —
-            giving teams real-time visibility, situational awareness, and faster
-            response across the built environment.
-          </p>
+    <section class="solution-section" aria-labelledby="solution-title-2" style="z-index:4">
+      <div class="solution-bg" style="background-image: url('Section Solution 2.png')" aria-hidden="true"></div>
+      <div class="solution-overlay" style="background: rgba(0,0,0,0.60)" aria-hidden="true"></div>
+      <div class="solution-info">
+        <h2 class="solution-h2" id="solution-title-2">
+          See Everything,<br>In Real Time
+        </h2>
+        <div class="solution-tags" role="list" aria-label="Products">
+          <span role="listitem">TWIN STUDIO</span>
+          <span class="solution-tag-sep" aria-hidden="true">|</span>
+          <span role="listitem">OPS CENTRE</span>
+          <span class="solution-tag-sep" aria-hidden="true">|</span>
+          <span role="listitem">24K CORE</span>
         </div>
-      </section>
-    </div>
+        <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+          Connect live data, systems, and assets into one operational layer —
+          giving teams real-time visibility, situational awareness, and faster
+          response across the built environment.
+        </p>
+      </div>
+    </section>
 
     <!-- Solution 3 -->
-    <div class="solution-stack-item">
-      <section class="solution-section" aria-labelledby="solution-title-3" style="z-index:5">
-        <div class="solution-bg" style="background-image: url('Section Solution 3.png')" aria-hidden="true"></div>
-        <div class="solution-overlay" style="background: rgba(0,0,0,0.20)" aria-hidden="true"></div>
-        <div class="solution-info">
-          <h2 class="solution-h2" id="solution-title-3">
-            Deliver Projects<br>with Clarity
-          </h2>
-          <div class="solution-tags" role="list" aria-label="Products">
-            <span role="listitem">AXIONE</span>
-            <span class="solution-tag-sep" aria-hidden="true">|</span>
-            <span role="listitem">TWINBOT</span>
-            <span class="solution-tag-sep" aria-hidden="true">|</span>
-            <span role="listitem">URBAN LIBRARY</span>
-          </div>
-          <p class="solution-desc anim-observe" style="transition-delay: 240ms">
-            Equip built-environment teams with the right visual language,
-            connected twin data, and AI-powered intelligence to manage
-            construction progress, costs, risks, and smarter delivery.
-          </p>
+    <section class="solution-section" aria-labelledby="solution-title-3" style="z-index:5">
+      <div class="solution-bg" style="background-image: url('Section Solution 3.png')" aria-hidden="true"></div>
+      <div class="solution-overlay" style="background: rgba(0,0,0,0.20)" aria-hidden="true"></div>
+      <div class="solution-info">
+        <h2 class="solution-h2" id="solution-title-3">
+          Deliver Projects<br>with Clarity
+        </h2>
+        <div class="solution-tags" role="list" aria-label="Products">
+          <span role="listitem">AXIONE</span>
+          <span class="solution-tag-sep" aria-hidden="true">|</span>
+          <span role="listitem">TWINBOT</span>
+          <span class="solution-tag-sep" aria-hidden="true">|</span>
+          <span role="listitem">URBAN LIBRARY</span>
         </div>
-      </section>
-    </div>
+        <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+          Equip built-environment teams with the right visual language,
+          connected twin data, and AI-powered intelligence to manage
+          construction progress, costs, risks, and smarter delivery.
+        </p>
+      </div>
+    </section>
 
   </div>
 
@@ -1971,10 +1939,7 @@
       });
     }
 
-    /* Cache wrapper's absolute top once, refresh on resize */
-    let wrapperAbsTop = wrapper.getBoundingClientRect().top + window.scrollY;
     window.addEventListener('resize', () => {
-      wrapperAbsTop = wrapper.getBoundingClientRect().top + window.scrollY;
       positionCards();
       update();
     }, { passive: true });
@@ -1982,15 +1947,11 @@
     function update() {
       const vh = window.innerHeight;
 
-      /*
-       * scrolledInto = how many px the user has scrolled past the wrapper top.
-       * Negative while the section is still approaching from below.
-       *
-       * The section bottom enters the viewport when the section top is at (vh - 980px).
-       * The section top enters 80px into viewport means section top = vh - 80px from screen bottom.
-       * → scrolledInto_trigger = -(vh - ENTRY_OFFSET) = -vh + ENTRY_OFFSET
-       */
-      const scrolledInto = window.scrollY - wrapperAbsTop;
+      /* Read wrapper top fresh each frame — earlier sections (marquee)
+         resize dynamically after fonts load, so a cached absolute-top
+         goes stale and the cards appear to skip their animation. */
+      const wrapperTop   = wrapper.getBoundingClientRect().top + window.scrollY;
+      const scrolledInto = window.scrollY - wrapperTop;
 
       /* Shift so that 0 = "section 80px into viewport" */
       const adjusted = scrolledInto + (vh - ENTRY_OFFSET);
@@ -2032,50 +1993,6 @@
   })();
   </script>
 
-  <!-- ── Solution parallax: bg slow, info fast ── -->
-  <script>
-  (() => {
-    const items  = Array.from(document.querySelectorAll('.solution-stack-item'));
-    const mobile = () => window.innerWidth <= 480;
-
-    function update() {
-      if (mobile()) {
-        items.forEach(item => {
-          const bg   = item.querySelector('.solution-bg');
-          const info = item.querySelector('.solution-info');
-          if (bg)   bg.style.transform   = '';
-          if (info) info.style.transform = '';
-        });
-        return;
-      }
-
-      const viewH = window.innerHeight;
-      items.forEach(item => {
-        const bg   = item.querySelector('.solution-bg');
-        const info = item.querySelector('.solution-info');
-        const rect      = item.getBoundingClientRect();
-        const itemH     = item.offsetHeight;
-        const inViewDist = itemH - viewH;
-
-        let progress;
-        if (inViewDist > 10) {
-          /* Sections 1 & 2: wrapper is taller than viewport, scroll-driven */
-          progress = Math.min(1, Math.max(0, -rect.top / inViewDist));
-        } else {
-          /* Section 3: wrapper = viewport height, animate during entry from below */
-          progress = Math.min(1, Math.max(0, 1 - rect.top / viewH));
-        }
-
-        if (bg)   bg.style.transform   = `translateY(${progress * -12}%)`;
-        if (info) info.style.transform = `translateY(${240 + progress * -800}px)`;
-      });
-    }
-
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update, { passive: true });
-  })();
-  </script>
 
   <!-- ── Footer ── -->
   <footer class="footer" aria-label="Site footer">
