@@ -77,12 +77,10 @@
       text-decoration: none;
     }
 
-    .logo-wordmark {
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.25px;
-      color: var(--color-text-primary);
-      font-family: var(--font-heading);
+    .nav-logo-img {
+      height: 44px;
+      width: auto;
+      display: block;
     }
 
     .nav-links {
@@ -267,12 +265,11 @@
       width: 1440px;
       height: 980px;
       background: var(--color-bg);
-      border-bottom: 1px solid var(--color-border);
       display: flex;
       align-items: center;
       overflow: hidden;
       /* Smooth bg transition when color flips */
-      transition: background-color 0.55s ease, border-color 0.55s ease;
+      transition: background-color 0.55s ease;
     }
 
     /* Blue state — triggered when "Cities" appears in viewport */
@@ -490,7 +487,7 @@
       .marquee-sep { width: 14px; height: 14px; margin: 0 56px; top: -5px; }
 
       /* Solution */
-      .solution-info { left: 40px !important; width: 86%; }
+      .solution-info { left: 80px !important; width: calc(100% - 160px); }
       .solution-h2 { font-size: 48px; max-width: 480px; }
       .solution-tags, .solution-desc { font-size: 14px; }
     }
@@ -629,13 +626,13 @@
         top: 0;
       }
       .solution-info {
-        left: 20px;
+        left: 80px;
         right: 20px;
         bottom: 40px;
         width: auto;
         transform: none;
       }
-      .solution-h2 { font-size: 34px; letter-spacing: -0.5px; max-width: 100%; }
+      .solution-h2 { font-size: 34px; letter-spacing: 0; max-width: 100%; }
       .solution-tags { font-size: 13px; gap: 10px; flex-wrap: wrap; }
       .solution-desc { font-size: 13px; max-width: 100%; }
     }
@@ -659,7 +656,7 @@
       text-align: center;
       max-width: 834px;
       margin: 0 auto 165px;
-      letter-spacing: -1px;
+      letter-spacing: 0;
     }
 
     .what-columns {
@@ -671,24 +668,22 @@
       align-items: flex-start;
     }
 
-    /* each column: fixed 927px per Figma, left border line */
+    /* each column: fixed 927px per Figma, header has left border line */
     .what-col {
       flex: 1;
       display: flex;
       flex-direction: column;
       height: 927px;
       min-width: 0;
-      border-left: 1px solid rgba(255, 255, 255, 0.15);
     }
 
-    #whatCol1 .what-col-texts, #whatCol1 .what-img-box,
-    #whatCol3 .what-col-texts, #whatCol3 .what-img-box { will-change: transform; }
-
+    /* Vertical divider — spans header height only (matches Figma) */
     .what-col-header {
       display: flex;
       align-items: flex-start;
       padding: 10px 24px;
       flex-shrink: 0;
+      border-left: 1px solid #484848;
     }
     #whatCol1 .what-col-header { height: 148px; }
     #whatCol2 .what-col-header { height: 314px; }
@@ -744,8 +739,9 @@
       font-family: var(--font-mono);
       font-size: 16px;
       line-height: 1.6;
-      color: #7b7b7b;
+      color: #b4b4b4;
       margin: 0;
+      text-transform: none;
     }
 
     /* Image container: white bg, fixed 303px, overflow clip */
@@ -832,8 +828,12 @@
       display: flex;
       align-items: center;
       gap: 16px;
+      /* Full viewport width + 80px side padding → "FROM DATA" is always 80px
+       * from the left edge and "TO MANAGEMENT" 80px from the right edge,
+       * regardless of viewport width. */
       padding: 0 80px;
-      max-width: 1440px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .logo-subtitle-text {
@@ -845,13 +845,40 @@
       white-space: nowrap;
     }
 
+    /* Line + arrowhead wrapped together. clip-path reveals the wrap from
+     * the left so both animate as a single arrow being "drawn" left→right.
+     * Colour #808080 matches the Figma arrow exactly.
+     *
+     * Positioning matches Figma: the line spans the full wrap width and the
+     * chevron is absolutely positioned at the right, overlapping the line's
+     * last 16 px. The chevron's open V lets the line show through, so the
+     * line looks like it continues all the way to the arrow tip. */
+    .logo-subtitle-arrow-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 24px;
+      color: #808080;
+      clip-path: inset(0 100% 0 0);
+      transition: clip-path 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     .logo-subtitle-line {
       flex: 1;
       height: 1px;
-      background: rgba(255, 255, 255, 0.15);
-      transform-origin: left center;
-      transform: scaleX(0);
-      transition: transform 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+      background: currentColor;
+    }
+
+    /* Arrowhead: exact 16×24 filled path from Figma, overlaid at right. */
+    .logo-subtitle-chevron {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 16px;
+      height: 24px;
+      color: inherit;
+      pointer-events: none;
     }
 
     .logo-subtitle-row .logo-subtitle-text:last-child {
@@ -860,8 +887,8 @@
       transition: opacity 0.7s ease 1.0s, transform 0.7s ease 1.0s;
     }
 
-    .logo-subtitle-row.sub-visible .logo-subtitle-line {
-      transform: scaleX(1);
+    .logo-subtitle-row.sub-visible .logo-subtitle-arrow-wrap {
+      clip-path: inset(0 0 0 0);
     }
 
     .logo-subtitle-row.sub-visible .logo-subtitle-text:last-child {
@@ -932,8 +959,14 @@
      */
     .value-scroll-wrapper {
       position: relative;
-      /* 1140px visible + 3 × 600px travel per card */
-      height: calc(1140px + 1800px);
+      /*
+       * Sticky section (1140) + just enough scroll room for the cards to settle.
+       * With stagger 2/3 (STAGGER=0.667) the 3 cards need ~1167px of "adjusted"
+       * scroll; `adjusted = scrolledInto + (vh − ENTRY_OFFSET)`, so required
+       * scroll room = 1167 − vh + 80 = 1247 − 100vh (clamped ≥ 400px).
+       * Result: sticky releases shortly after card 3 locks into place.
+       */
+      height: calc(1140px + max(300px, 1247px - 100vh));
       width: 100%;
       margin-bottom: 160px;
     }
@@ -961,11 +994,11 @@
     .value-left {
       position: absolute;
       left: 80px;
-      top: 120px;
-      width: 560px;
+      top: 240px;
+      width: 639px;
       display: flex;
       flex-direction: column;
-      gap: 40px;
+      gap: 80px;
     }
 
     .value-h2 {
@@ -974,7 +1007,7 @@
       font-weight: 600;
       line-height: 1.1;
       text-transform: uppercase;
-      letter-spacing: -1px;
+      letter-spacing: 0;
       margin: 0;
     }
 
@@ -986,7 +1019,7 @@
       font-size: 16px;
       line-height: 1.6;
       color: #7b7b7b;
-      max-width: 335px;
+      max-width: 396px;
       margin: 0;
     }
 
@@ -1066,17 +1099,10 @@
       z-index: 0;
     }
 
-    .solution-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.30);
-      z-index: 1;
-    }
-
     .solution-info {
       position: absolute;
-      left: max(80px, calc(50% - 640px));
-      bottom: 100px;
+      left: 80px;
+      bottom: 80px;
       width: 673px;
       display: flex;
       flex-direction: column;
@@ -1089,10 +1115,9 @@
       font-family: var(--font-heading);
       font-size: 62px;
       font-weight: 600;
-      text-transform: uppercase;
       color: #fafafa;
       line-height: 1.1;
-      letter-spacing: -1px;
+      letter-spacing: 0;
       max-width: 672px;
     }
 
@@ -1117,7 +1142,6 @@
       color: #eeeeee;
       line-height: 1.6;
       max-width: 673px;
-      opacity: 0.85;
     }
 
     /* ─── Footer ─────────────────────────────────────────────────── */
@@ -1156,23 +1180,10 @@
       text-decoration: none;
     }
 
-    .footer-logo-icon {
-      width: 44px;
+    .footer-logo-img {
       height: 44px;
-      flex-shrink: 0;
-      background: #262626;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .footer-wordmark {
-      font-family: var(--font-heading);
-      font-size: 18px;
-      font-weight: 600;
-      color: #fafafa;
-      letter-spacing: -0.3px;
+      width: auto;
+      display: block;
     }
 
     .footer-tagline {
@@ -1273,7 +1284,53 @@
       .footer-nav-cols { flex-direction: column; }
       .footer-nav-col { width: 100%; }
     }
+    /* ─── GSAP scroll animations (opt-in via data attributes) ─── */
+
+    /* Text stagger: word starts hidden and sits 1em below its final spot */
+    .stagger-word {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(1em);
+      will-change: transform, opacity;
+    }
+
+    /* Parallax wrapper: clip the oversized child and give GSAP a positioning
+     * context. Child <img>/<video> is pre-scaled so the ±6.25 % translate
+     * never reveals the edges. */
+    [data-parallax] {
+      overflow: hidden;
+      position: relative;
+    }
+
+    [data-parallax] img,
+    [data-parallax] video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* scale must be ≥ 1 + 2 × max|yPercent|/100 so the translate never
+       * reveals the edges. Current yPercent is ±18.75 → need ≥ 1.375;
+       * use 1.45 for a small safety margin against subpixel rounding. */
+      transform: scale(1.45);
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    /* Solution backgrounds use [data-parallax] but must stay position:absolute
+     * inside their section — override the generic parallax `position:relative`
+     * with higher specificity (class + attribute). */
+    .solution-bg[data-parallax] { position: absolute; }
+
+    /* Counter-parallax grid: container clips any column that drifts outside
+     * its natural box; each column gets GPU-accelerated transforms via
+     * will-change. Speed is controlled in js/animations.js (SHIFT constant). */
+    [data-parallax-grid] { overflow: hidden; }
+    [data-parallax-col]  { will-change: transform; }
   </style>
+
+  <!-- GSAP + ScrollTrigger (CDN) + local animations module -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+  <script src="js/animations.js" defer></script>
 </head>
 <body>
 
@@ -1283,18 +1340,7 @@
     <nav class="nav" aria-label="Main navigation">
 
       <a href="/" class="nav-logo" aria-label="Infralink — home">
-        <!-- Logo mark -->
-        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true" focusable="false">
-          <rect width="30" height="30" rx="7.5" fill="#1257fd"/>
-          <!-- Diamond core -->
-          <path d="M15 7L21 13V17L15 23L9 17V13L15 7Z"
-                fill="none" stroke="white" stroke-width="1.5" stroke-opacity="0.3"/>
-          <path d="M8.5 15L12.5 11L16.5 15L12.5 19L8.5 15Z"
-                fill="white" fill-opacity="0.92"/>
-          <!-- Node dot -->
-          <circle cx="21" cy="10" r="2.5" fill="#93c5fd"/>
-        </svg>
-        <span class="logo-wordmark">Infralink</span>
+        <img src="Logo 2.png" alt="Infralink" class="nav-logo-img">
       </a>
 
       <ul class="nav-links" id="nav-links-list" role="list">
@@ -1581,18 +1627,19 @@
 
     <!-- Solution 1 -->
     <section class="solution-section" aria-labelledby="solution-title-1" style="z-index:3">
-      <div class="solution-bg" style="background-image: url('Section Solution 1.png')" aria-hidden="true"></div>
-      <div class="solution-overlay" aria-hidden="true"></div>
+      <div class="solution-bg" data-parallax aria-hidden="true">
+        <img src="Solution 1.png" alt="">
+      </div>
       <div class="solution-info">
         <h2 class="solution-h2" id="solution-title-1">
-          Visualize Your World Digitally
+          VISUALIZE YOUR WORLD DIGITALLY
         </h2>
         <div class="solution-tags" role="list" aria-label="Products">
           <span role="listitem">TILEHUB</span>
           <span class="solution-tag-sep" aria-hidden="true">|</span>
           <span role="listitem">TWIN STUDIO</span>
         </div>
-        <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+        <p class="solution-desc">
           From spatial data to 3D tilesets — no geospatial expertise needed.
           TileHub streamlines tileset creation from upload to generation,
           feeding directly into Twin Studio for data mapping.
@@ -1602,11 +1649,12 @@
 
     <!-- Solution 2 -->
     <section class="solution-section" aria-labelledby="solution-title-2" style="z-index:4">
-      <div class="solution-bg" style="background-image: url('Section Solution 2.png')" aria-hidden="true"></div>
-      <div class="solution-overlay" style="background: rgba(0,0,0,0.60)" aria-hidden="true"></div>
+      <div class="solution-bg" data-parallax aria-hidden="true">
+        <img src="Solution 2.png" alt="">
+      </div>
       <div class="solution-info">
         <h2 class="solution-h2" id="solution-title-2">
-          See Everything,<br>In Real Time
+          SEE EVERYTHING, IN REAL TIME
         </h2>
         <div class="solution-tags" role="list" aria-label="Products">
           <span role="listitem">TWIN STUDIO</span>
@@ -1615,7 +1663,7 @@
           <span class="solution-tag-sep" aria-hidden="true">|</span>
           <span role="listitem">24K CORE</span>
         </div>
-        <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+        <p class="solution-desc">
           Connect live data, systems, and assets into one operational layer —
           giving teams real-time visibility, situational awareness, and faster
           response across the built environment.
@@ -1625,11 +1673,12 @@
 
     <!-- Solution 3 -->
     <section class="solution-section" aria-labelledby="solution-title-3" style="z-index:5">
-      <div class="solution-bg" style="background-image: url('Section Solution 3.png')" aria-hidden="true"></div>
-      <div class="solution-overlay" style="background: rgba(0,0,0,0.20)" aria-hidden="true"></div>
+      <div class="solution-bg" data-parallax aria-hidden="true">
+        <img src="Solution 3.png" alt="">
+      </div>
       <div class="solution-info">
         <h2 class="solution-h2" id="solution-title-3">
-          Deliver Projects<br>with Clarity
+          DELIVER PROJECTS WITH CLARITY
         </h2>
         <div class="solution-tags" role="list" aria-label="Products">
           <span role="listitem">AXIONE</span>
@@ -1638,7 +1687,7 @@
           <span class="solution-tag-sep" aria-hidden="true">|</span>
           <span role="listitem">URBAN LIBRARY</span>
         </div>
-        <p class="solution-desc anim-observe" style="transition-delay: 240ms">
+        <p class="solution-desc">
           Equip built-environment teams with the right visual language,
           connected twin data, and AI-powered intelligence to manage
           construction progress, costs, risks, and smarter delivery.
@@ -1652,17 +1701,17 @@
   <section class="what-section">
     <h2 class="what-heading">What we've done</h2>
 
-    <div class="what-columns">
+    <div class="what-columns" data-parallax-grid>
 
       <!-- Column 01: Green Building Initiative -->
       <div class="what-col" id="whatCol1">
         <div class="what-col-header">
           <span class="what-col-num">01</span>
         </div>
-        <div class="what-col-body">
+        <div class="what-col-body" data-parallax-col>
           <div class="what-col-texts">
-            <h3 class="what-col-title">Green Building Initiative</h3>
-            <p class="what-col-cat">CITIES &amp; DISTRICTS</p>
+            <h3 class="what-col-title">FACILTIY OPS MANAGEMENT</h3>
+            <p class="what-col-cat">Keeping our cities on track<br>— today, and for generations.</p>
           </div>
           <div class="what-img-box">
             <img class="what-img-1"
@@ -1677,12 +1726,12 @@
         <div class="what-col-header">
           <span class="what-col-num">02</span>
         </div>
-        <div class="what-col-body">
+        <div class="what-col-body" data-parallax-col>
           <!-- text + image grouped with 24px gap -->
           <div class="what-col-group">
             <div class="what-col-texts">
               <h3 class="what-col-title">SECURITY OPS</h3>
-              <p class="what-col-cat">DEFENSE &amp; SECURITY</p>
+              <p class="what-col-cat">Watching over the places<br>people trust every day.</p>
             </div>
             <div class="what-img-box">
               <!-- bg layer: imgContentImage1 + blue tint -->
@@ -1697,7 +1746,7 @@
             </div>
           </div>
           <!-- button: 80px below image group -->
-          <button class="what-btn">View all usecases</button>
+          <button class="what-btn">View all use cases</button>
         </div>
       </div>
 
@@ -1706,10 +1755,10 @@
         <div class="what-col-header">
           <span class="what-col-num">03</span>
         </div>
-        <div class="what-col-body">
+        <div class="what-col-body" data-parallax-col>
           <div class="what-col-texts">
-            <h3 class="what-col-title">FACILTIY OPS MANAGEMENT</h3>
-            <p class="what-col-cat">TRANSPORT</p>
+            <h3 class="what-col-title">CROWD MANAGEMENT</h3>
+            <p class="what-col-cat">Keeping places running,<br>day after day.</p>
           </div>
           <div class="what-img-box">
             <!-- bg layer: same imgContentImage1 + blue tint -->
@@ -1740,7 +1789,15 @@
 
       <div class="logo-subtitle-row">
         <span class="logo-subtitle-text">FROM DATA</span>
-        <div class="logo-subtitle-line"></div>
+        <div class="logo-subtitle-arrow-wrap" aria-hidden="true">
+          <!-- Horizontal line spans the full wrap; the chevron overlaps the
+               line's right 16 px so the line appears to pass straight through
+               the arrow's open V to the tip — matching Figma's layering. -->
+          <span class="logo-subtitle-line"></span>
+          <svg class="logo-subtitle-chevron" viewBox="0 0 16 24" fill="none" focusable="false">
+            <path d="M1.01 23.7832L0.7 23.3916L0.39 23L14.39 11.8916L0.39 0.783203L0.7 0.391602L1.01 0L16 11.8916L1.01 23.7832Z" fill="currentColor"/>
+          </svg>
+        </div>
         <span class="logo-subtitle-text">TO MANAGEMENT</span>
       </div>
 
@@ -1798,12 +1855,10 @@
         <!-- Left: title + desc (sticky while cards animate) -->
         <div class="value-left">
           <h2 class="value-h2" id="value-title">
-            <span class="value-h2-white">The Value </span>
-            <span class="value-h2-gray">of a team that </span>
-            <span class="value-h2-white">understands the work</span>
+            <span class="value-h2-white">Every day</span><span class="value-h2-gray">, we help cities </span><span class="value-h2-white">move</span><span class="value-h2-gray">, </span><span class="value-h2-white">grow</span><span class="value-h2-gray">, and </span><span class="value-h2-white">thrive</span><span class="value-h2-gray">.</span>
           </h2>
           <p class="value-desc">
-            We combine built-environment expertise, product thinking, and delivery experience to turn complex project data into practical tools for execution, control, and better decision-making.
+            We do this by designing technology that works alongside people. Combining built-environment expertise, product thinking, and delivery experience to turn complex data into practical tools for full situation awareness and informed decision-making.
           </p>
         </div>
 
@@ -1839,52 +1894,7 @@
     </section>
   </div>
 
-  <!-- ── What section: text + image parallax at different speeds ── -->
-  <script>
-  (() => {
-    'use strict';
-    const section = document.querySelector('.what-section');
-    if (!section) return;
-
-    /*
-     * Col 1: text and image both move UP — image 2.6× faster than text
-     * Col 3: text and image both move DOWN — image 2.6× faster than text
-     *        Col 3 travels further overall than col 1 → visible speed diff
-     * p=0.5 (section centred in viewport) → all translateY = 0
-     */
-    const targets = [
-      { el: document.querySelector('#whatCol1 .what-col-texts'), travel: -200  },
-      { el: document.querySelector('#whatCol1 .what-img-box'),   travel: -520  },
-      { el: document.querySelector('#whatCol3 .what-col-texts'), travel:  280  },
-      { el: document.querySelector('#whatCol3 .what-img-box'),   travel:  720  },
-    ].filter(t => t.el);
-
-    if (!targets.length) return;
-
-    let sectionAbsTop = 0, sectionH = 0;
-
-    function measure() {
-      sectionAbsTop = section.getBoundingClientRect().top + window.scrollY;
-      sectionH      = section.offsetHeight;
-    }
-
-    function update() {
-      const vh  = window.innerHeight;
-      const raw = (window.scrollY + vh - sectionAbsTop) / (vh + sectionH);
-      const p   = Math.max(0, Math.min(1, raw));
-      const c   = p - 0.5;
-
-      targets.forEach(({ el, travel }) => {
-        el.style.transform = `translateY(${c * travel}px)`;
-      });
-    }
-
-    measure();
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', () => { measure(); update(); }, { passive: true });
-  })();
-  </script>
+  <!-- ── What section: no animation (static layout) ── -->
 
   <!-- ── Value section: scroll-driven card slide-in ── -->
   <script>
@@ -1899,20 +1909,23 @@
      * Trigger: card 1 starts when the section has entered 80px into the viewport from below.
      * Each card gets 500px of scroll travel, sequentially.
      */
+    /* Per-card start rotation (card 2 swings in from opposite side) */
     const cards = [
-      { el: document.getElementById('valueCard1') },
-      { el: document.getElementById('valueCard2') },
-      { el: document.getElementById('valueCard3') },
+      { el: document.getElementById('valueCard1'), startRot: -30 },
+      { el: document.getElementById('valueCard2'), startRot:  30 },
+      { el: document.getElementById('valueCard3'), startRot: -30 },
     ];
 
-    const CARD_TRAVEL  = 500;   /* scroll px per card               */
-    const START_ROT    = -25;   /* initial rotation for every card  */
-    const OFF_X        = 900;   /* how far off-screen right (px)    */
-    const ENTRY_OFFSET = 80;    /* px into viewport before card 1 fires */
-    const GAP          = 46;    /* vertical gap between cards (px)  */
-    const TOP_OFFSET   = 140;   /* card 1 top from section top (px) */
+    const CARD_TRAVEL  = 500;   /* scroll px per card                               */
+    const STAGGER      = 2 / 3; /* next card starts when prev is 2/3 of the way in  */
+    const OFF_X        = 900;   /* how far off-screen right (px)                    */
+    const ENTRY_OFFSET = 80;    /* px into viewport before card 1 fires             */
+    const GAP          = 46;    /* vertical gap between cards (px)                  */
+    const TOP_OFFSET   = 150;   /* card 1 top from section top (px)                 */
 
-    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+    /* Linear easing keeps cards moving at constant visual speed throughout
+     * the sticky region — avoids the "dead tail" where cubic easing produces
+     * almost no motion in the last 30 % of scroll and the section feels stuck. */
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
     /* Set final vertical positions based on measured card heights */
@@ -1950,12 +1963,12 @@
       cards.forEach((card, i) => {
         if (!card.el) return;
 
-        const start = i * CARD_TRAVEL;
-        const raw   = clamp((adjusted - start) / CARD_TRAVEL, 0, 1);
-        const p     = easeOutCubic(raw);
+        /* Card i starts when the previous card is STAGGER (2/3) of its way in. */
+        const start = i * CARD_TRAVEL * STAGGER;
+        const p     = clamp((adjusted - start) / CARD_TRAVEL, 0, 1);
 
-        const tx  = OFF_X   * (1 - p);   /* slide right → 0 */
-        const rot = START_ROT * (1 - p); /* -15° → 0°        */
+        const tx  = OFF_X        * (1 - p); /* slide right → 0           */
+        const rot = card.startRot * (1 - p); /* per-card rotation → 0°    */
 
         card.el.style.transform = `translateX(${tx}px) rotate(${rot}deg)`;
       });
@@ -1993,14 +2006,7 @@
       <!-- Logo + tagline -->
       <div class="footer-logo-area">
         <a href="/" class="footer-logo" aria-label="Infralink — home">
-          <div class="footer-logo-icon">
-            <svg width="28" height="28" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-              <path d="M15 7L21 13V17L15 23L9 17V13L15 7Z" fill="none" stroke="white" stroke-width="1.5" stroke-opacity="0.3"/>
-              <path d="M8.5 15L12.5 11L16.5 15L12.5 19L8.5 15Z" fill="white" fill-opacity="0.92"/>
-              <circle cx="21" cy="10" r="2.5" fill="#93c5fd"/>
-            </svg>
-          </div>
-          <span class="footer-wordmark">Infralink</span>
+          <img src="Logo 2.png" alt="Infralink" class="footer-logo-img">
         </a>
         <p class="footer-tagline">Real Impact,<br>Made Together</p>
       </div>

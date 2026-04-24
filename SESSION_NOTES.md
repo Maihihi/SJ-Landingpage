@@ -134,48 +134,173 @@
 
 ---
 
-## Current state (end of Session 7)
-- **localhost**: user's server running at `localhost:8000`; Claude preview server available on `localhost:8010` (if started via preview tool)
-- **Vercel**: still on Session 6 state (commit `e53adba`) — Session 7 changes NOT deployed
-- **GitHub**: branch `main` last commit `e53adba`. Session 7 work is in worktree `bold-hoover-ed7d1e` on branch `claude/bold-hoover-ed7d1e`, **uncommitted**.
-- **Uncommitted diff**: ~420 lines in `index.html` (marquee rebuild + solution effects removal + value wrapperTop fix)
+## Session 8 — 2026-04-24
+**Status:** Localhost only (port 8010) — NOT deployed to Vercel. Uncommitted.
+
+### Major theme: GSAP scroll-animation system + Figma parity pass
+
+#### New infrastructure: GSAP via CDN + `js/animations.js`
+- **Created `js/animations.js`** — opt-in effects triggered by data attributes
+- **GSAP 3.12.5 + ScrollTrigger loaded via CDN in `<head>`** (`defer`)
+- Three effects available, all activated by data attributes:
+  1. `[data-stagger="word"]` → `initTextStagger()` — word-by-word fade-in (currently **not applied** anywhere; removed from solution H2 after test)
+  2. `[data-parallax]` → `initParallax()` — applied to the 3 `.solution-bg` images (scale 1.45, yPercent ±18.75%)
+  3. `[data-parallax-grid]` + `[data-parallax-col]` → `initCounterParallaxGrid()` — applied to `.what-columns` with 3 `.what-col-body` targets (SHIFT=10% alternating direction)
+- All effects share single `ScrollTrigger.refresh()` on `window.load`
+
+#### Solution section — font/spacing + Figma parity + overlay removal
+- `.solution-h2`: removed `text-transform: uppercase`, `letter-spacing` `-1px` → `0` (per Figma)
+- **Then hard-coded H2 text to UPPERCASE** in HTML per user's explicit request (lines 1622/1643/1666) — user reverted the Figma lowercase after initially agreeing
+- `.solution-info { bottom }` `100px` → `80px` (Figma)
+- `.solution-info { left }` changed from `max(80px, calc(50% - 640px))` → **`left: 80px`** at all breakpoints (user requirement: always 80px from viewport left, responsive-safe)
+- `.solution-desc`: removed `opacity: 0.85`
+- **Removed all 3 `.solution-overlay` divs + the CSS rule entirely** — user wanted background images shown without dark tint (A3 option)
+- `.solution-section { height }` stayed at `100vh` (tested 810px briefly, reverted)
+- `data-parallax` added to each `.solution-bg`; inline `style="background-image:..."` replaced with `<img src="Solution N.png">` child
+- CSS override: `.solution-bg[data-parallax] { position: absolute }` — higher specificity than generic `[data-parallax] { position: relative }`
+- **3 background images replaced**: old `Section Solution 1/2/3.png` deleted; new `Solution 1/2/3.png` (user provided) in use
+  - Orphans `Solution.png` and `Solution-2.png` also deleted
+  - Filenames normalized (double-space and plural `s` fixed) before use
+- `data-stagger="word"` was briefly applied then removed on all 3 H2 (user reverted)
+- Parallax strength escalated over the session: ±6.25 → ±12.5 → **±18.75%** (1.5× the default); CSS `scale` adjusted 1.125 → 1.3 → **1.45** to prevent edge reveal
+
+#### What We've Done section — Figma parity + counter-parallax grid
+- **Removed entire parallax `<script>` block** (text/image independent movement) — replaced by counter-parallax grid effect
+- Removed `will-change: transform` declarations that were specific to that old parallax
+- **Border lines fixed**:
+  - Moved `border-left` from `.what-col` (full 927px) → `.what-col-header` only (148/314/174 heights) — matches Figma (vertical line only spans header, not body)
+  - Color: `rgba(255,255,255,0.15)` → **`#484848`** (Figma's exact rgb(72,72,72))
+- `.what-heading` letter-spacing `-1px` → `0`
+- **Text content rewritten to match Figma**:
+  - Col 01: "Green Building Initiative" / "CITIES & DISTRICTS" → **"FACILTIY OPS MANAGEMENT" / "Keeping our cities on track — today, and for generations."**
+  - Col 02: desc "DEFENSE & SECURITY" → **"Watching over the places people trust every day."**; button "View all usecases" → **"View all use cases"**
+  - Col 03: "FACILTIY OPS MANAGEMENT" / "TRANSPORT" → **"CROWD MANAGEMENT" / "Keeping places running, day after day."**
+  - (NOTE: "FACILTIY" typo now lives on col 01, not col 03 — Figma design moved it)
+- `.what-col-cat`: color `#7b7b7b` → `#b4b4b4`, added `text-transform: none` (was relying on uppercased category labels; now it's a descriptive sentence)
+- **Counter-parallax grid applied**: `data-parallax-grid` on `.what-columns`, `data-parallax-col` on 3 × `.what-col-body` — only text+image clusters drift; `.what-col-header` (01/02/03 numbers) stays fixed per user's G1b choice
+
+#### Value section — animation rebuild + text rewrite
+- **Card rotations changed** per user spec:
+  - Card 1: −25° → **−30°**
+  - Card 2: −25° → **+30°** (opposite direction)
+  - Card 3: −25° → **−30°**
+  - Encoded as `startRot` per card in the `cards[]` array
+- **Stagger timing changed**: `start = i * CARD_TRAVEL` (sequential, wait full) → **`start = i * CARD_TRAVEL * STAGGER`** with `STAGGER = 2/3` — card N+1 starts when card N is 2/3 through its travel
+- **Easing changed**: `easeOutCubic` → **linear (no easing)** — eliminates "dead tail" where cubic produced almost no movement in last 30% of scroll, which felt like the section was "stuck"
+- **Wrapper height now viewport-aware**: static `calc(1140px + 1800px)` (= 2940px with 1453 px dead scroll) → **`calc(1140px + max(300px, 1247px - 100vh))`** — scales so sticky releases immediately when card 3 settles. Formula: card 3 end in `adjusted` coords = 1167, so scroll room needed = 1167 − (vh − 80) = 1247 − 100vh.
+- `TOP_OFFSET`: `140` → `150` (match Figma card1 y=150)
+- **Heading text rewritten** to Figma content:
+  - Old: `"The Value of a team that understands the work"` (3 spans white/gray/white)
+  - New: `"Every day, we help cities move, grow, and thrive."` — **8 spans** alternating white/gray per Figma's styled ranges
+- `.value-h2 { letter-spacing }` `-1px` → `0`
+- `.value-left`: `top: 120 → 240`, `gap: 40 → 80`, `width: 560 → 639` (match Figma y=240 from section top)
+- `.value-desc`: text rewritten to Figma content; `max-width: 335 → 396`
+
+#### Logo / Partners section
+- **Subtitle row positioning fixed**: removed `max-width: 1440px`, added `width: 100%; box-sizing: border-box` → "TO MANAGEMENT" now always 80px from viewport right edge at any width
+- **Arrow icon replaced with exact Figma vector**:
+  - Old: hand-drawn stroke chevron path
+  - New: **2-path filled SVG exported from Figma node `40001048:2184`** — line path + arrowhead path (9-point filled outline), color `#808080`
+  - Structure: line = CSS flex div (stretches); chevron = `position: absolute; right: 0` overlaying the line's last 16 px. Line visually passes through the chevron's open V to the tip — matches Figma's layering.
+- **Draw animation**: line + chevron wrapped in `.logo-subtitle-arrow-wrap`; `clip-path: inset(0 100% 0 0)` → `inset(0 0 0 0)` over 1.4 s cubic — reveals the whole arrow left→right as one continuous stroke
+- "TO MANAGEMENT" text retains its `0.7 s / delay 1.0 s` fade-in (unchanged)
+- Color `#808080` matches Figma exactly (old `rgba(255,255,255,0.15)` on `#131313` was too dim — Figma is brighter/solid)
+
+#### Marquee section
+- **Removed `border-bottom: 1px solid`** — was showing as unwanted 1 px line above Solution 1
+- Removed `border-color` from `transition` property (no longer needed)
+
+#### Logo image (Infralink branding)
+- User added `Logo 2.png` (340×88 px, horizontal aspect 3.86 : 1 — icon + wordmark combined)
+- **Nav**: removed 30×30 SVG diamond mark + `<span class="logo-wordmark">Infralink</span>` → single `<img src="Logo 2.png" class="nav-logo-img">` (height 44 px)
+- **Footer**: removed `.footer-logo-icon` container (44×44 `#262626` bg) + 28×28 SVG + wordmark span → single `<img src="Logo 2.png" class="footer-logo-img">` (height 44 px)
+- CSS rules removed: `.logo-wordmark`, `.footer-logo-icon`, `.footer-wordmark` — dead code cleaned
+
+#### Preview tool fix
+- `.claude/launch.json`: switched from `python3 -m http.server` → `npx -y http-server -p 8010 -c-1 /Users/mai/Documents/15_SJ Landing page/sj-draft-landing`
+- Reason: macOS sandboxing blocked `python3 http.server` from reading `os.getcwd()` in the Claude-owned runtime context. `npx http-server` takes an explicit path argument and works fine.
+
+### Key decisions (Session 8)
+
+- **GSAP + data-attribute pattern is the new standard** for all scroll effects going forward. The old inline `<script>` IIFE per effect is legacy — don't add more of those. To add an effect to any element, add the corresponding data attribute; no JS edit needed.
+- **SHIFT in counter-parallax grid is a single knob** — same magnitude for every column, only direction alternates. Do NOT per-column-customize speeds; user explicitly rejected that.
+- **Parallax scale-vs-translate rule**: whenever `[data-parallax] img`'s `transform: scale(X)` is set, `X` must be `≥ 1 + 2 × max|yPercent|/100`. Current: yPercent ±18.75 → scale 1.45 (need ≥ 1.375; buffer for subpixel). If yPercent is bumped again, bump scale.
+- **`splitWords()` destroys innerHTML** — never apply `data-stagger="word"` to elements whose styling relies on child spans (e.g. `.value-h2` with 8 colored spans). If needed, adapt the splitter.
+- **Solution section layering**: user asked for NO overlay, NO scroll effects on text, ONLY background parallax via GSAP. H2 hard-coded UPPERCASE in HTML (not CSS `text-transform`) so the literal DOM text is what shows.
+- **Value card sticky timing**: wrapper height is derived from scroll-math (`1247 − 100vh`) — if you ever change `STAGGER` (2/3), `CARD_TRAVEL` (500), or `ENTRY_OFFSET` (80), recompute the formula or the "stuck at card 3" bug returns.
+- **Figma arrow implementation**: line is CSS (stretchable), arrowhead is absolute-positioned SVG overlay at right. Both live inside `.logo-subtitle-arrow-wrap` so the single `clip-path` animation reveals them together. Line runs UNDER the arrow's open V all the way to the tip — mirrors Figma's layered paths exactly.
+- **Preview_screenshot tool is unreliable in this environment** — returned all-black frames repeatedly despite DOM being correct. Rely on `preview_inspect` / `preview_eval` for verification and ask user to visually confirm in their own browser.
+
+---
+
+## Current state (end of Session 8)
+
+- **localhost**: user's browser at `localhost:8010` (npx http-server via Claude Preview). User's own `python3 -m http.server 8000` may or may not still be running — not required for Claude work.
+- **Vercel**: still on Session 6 state (commit `e53adba`). Sessions 7 + 8 both uncommitted and undeployed.
+- **GitHub**: `main` branch still at `e53adba`. Session 7 worktree `bold-hoover-ed7d1e` exists with its diff. Session 8 work is in the **main working copy** at `/Users/mai/Documents/15_SJ Landing page/sj-draft-landing`, not in a worktree.
+- **Uncommitted files**:
+  - `index.html` (large diff — font/spacing, text rewrites, GSAP CDN, new CSS, data-attrs)
+  - `js/animations.js` (new file)
+  - `.claude/launch.json` (preview server command)
+  - `Solution 1.png`, `Solution 2.png`, `Solution 3.png` (new images, renamed from user-provided files)
+  - `Logo 2.png` (new logo)
+  - Deleted: `Section Solution 1/2/3.png`, `Solution.png`, `Solution-2.png`
+- **All three scroll-effects modules registered**:
+  - `initTextStagger()` — registered, no targets in DOM currently
+  - `initParallax()` — 3 targets (solution bg images)
+  - `initCounterParallaxGrid()` — 1 grid, 3 column targets (what section)
 
 ---
 
 ## Todo — next session
 
-### Priority 1: Visual QA pass on Session 7 changes
-- Open `localhost:8000` (or 8010) and scroll full page
-- **Marquee**: verify text starts off-screen right, slides to end with "Alive" 80px from viewport right, bg turns blue between "Cities" appearing and "Alive" appearing
-- **Solution**: verify 3 stacked full-viewport sections with NO parallax, NO sticky — just plain scroll
-- **Value**: verify 3 cards now animate in from right with rotation (regression fix verification)
-- **What** + **Logo marquee**: verify still work (untouched this session)
+### Priority 1: Visual QA on GSAP effects
+Open `localhost:8010` in real browser and verify:
+- **Solution bg parallax**: scroll through all 3 sections; images should visibly drift at ±18.75%. If still feels weak, consider bumping SHIFT in `initParallax()` from 18.75 (and scale accordingly).
+- **Counter-parallax grid (What section)**: scroll through; col 1 & 3 should drift up, col 2 should drift down. Watch for **empty space** at top/bottom of `.what-col-body` when it shifts — if visible, reduce SHIFT from 10 to 6-8 in `js/animations.js`.
+- **Value cards**: scroll into section; all 3 should slide in from bottom-right with alternating rotations (−30°, +30°, −30°); **no stuck/khựng** feeling at the end; cards settle just as sticky releases.
+- **Logo subtitle arrow**: scroll to "FROM DATA ——► TO MANAGEMENT" row; arrow should draw left-to-right in one continuous stroke, then "TO MANAGEMENT" fades in.
 
-### Priority 2: Clean up dead code
-- Remove stale `solutionItems` reference at `index.html:1572` (main IIFE) — class `.solution-stack-item` no longer exists
-- Consider removing `--mq-travel` CSS var if it's truly unused outside mobile breakpoints (audit first)
+### Priority 2: Replace Solution background images with higher-quality versions
+User said they will "send higher-quality images later." Current `Solution 1/2/3.png` are compressed (808 KB / 3.7 MB / 394 KB — especially Solution 3 is heavily compressed) and look blurry at scale 1.45. When user provides new files:
+- Drop into project root with same names → no code changes needed
+- If names differ, update 3 `<img src="...">` in HTML
+- Files ≥ 3 MB PNG or JPG Q90+ recommended for scale 1.45 sharpness
 
-### Priority 3: Commit + deploy Session 7
-- Decide: merge worktree branch back to main, or cherry-pick changes
-- `git add index.html && git commit && git push && vercel --prod --yes`
+### Priority 3: Carry-over cleanup from Session 7
+- Stale `solutionItems` reference at `index.html:1572` — still there, still harmless, still should be removed
+- `--mq-travel` CSS var audit — still pending
+- `.solution-gap` CSS rule at mobile breakpoint — still orphaned, still safe to remove
 
-### Priority 4: Carry-over from Session 6
-- **What section**: no mobile breakpoints — still needs responsive rework
-- **Footer social icons**: `href="#"` placeholders still need real URLs
-- **"FACILTIY" typo**: still preserved from Figma — confirm with user
+### Priority 4: Commit & deploy
+- Session 7 + Session 8 combined diff is large; user should decide whether to squash or split commits
+- `git add index.html js/ "Solution 1.png" "Solution 2.png" "Solution 3.png" "Logo 2.png" .claude/launch.json`
+- `git rm "Section Solution 1.png" "Section Solution 2.png" "Section Solution 3.png" Solution.png Solution-2.png`
+- Commit, push, `vercel --prod --yes`
+
+### Priority 5: Responsive pass (still not done)
+- What section: no mobile breakpoints for the new counter-parallax or column layout
+- Value section: `.value-inner` fixed `1440px`, cards absolute at `left: 789px` — not responsive
+- Logo subtitle arrow: wrap/line uses flex but chevron is `position: absolute; right: 0` — should work on narrow viewports but untested
+- Solution `.solution-info { left: 80px }` at mobile ≤480 — needs visual check for cramping (right padding is only 20px currently)
+
+### Priority 6: Footer carry-overs (pre-launch)
+- Social icon `href="#"` placeholders → real URLs
+- Tagline "Real Impact, Made Together" — confirm it's final
 
 ---
 
-## Known bugs / edge cases
+## Known bugs / edge cases (Session 8 additions)
 
-- **Cached scroll positions go stale**: any IIFE that caches `getBoundingClientRect().top + scrollY` at script-load time will break if elements above resize dynamically (e.g. marquee wrapper after fonts load). Rule of thumb: read fresh each frame unless you've proven nothing above shifts.
-- **Stale `solutionItems` reference** at line 1572 — harmless (returns empty array) but should be removed
-- **`.solution-gap` CSS rule** exists at mobile breakpoint but no `.solution-gap` element in DOM — leftover from intermediate restructure, safe to remove
-- **"FACILTIY" typo**: preserved from Figma design — confirm with user
-- **Preview tool scroll**: `window.scrollTo()` doesn't work in Claude preview iframe — test scroll animations at `localhost:8000` in real browser
-- **What section parallax at page load**: col 01 starts +200px up and col 03 +280px down at scroll=0 — correct `p=0` state, not a bug
-- **Mobile — What section**: no responsive breakpoints; columns overflow on narrow screens
-- **Value section at narrow viewports**: `.value-inner` fixed `width: 1440px`; cards use `left: 789px` absolute — not responsive
-- **Footer social icons**: `href="#"` placeholder — need real URLs
-- **Logo marquee on mobile**: marquee still runs on mobile (no breakpoint to pause/disable) — may want to reduce speed or pause on mobile
-- **Port 8000 conflict**: user runs own `python3 -m http.server 8000`; Claude Preview tool is configured for port 8010 to avoid conflict
+- **`preview_screenshot` returns all-black frames** in this environment — use `preview_inspect` / `preview_eval` for DOM verification and ask user to confirm visually.
+- **GSAP CDN failure leaves `.stagger-word { opacity: 0 }` elements invisible** — no `.no-js` fallback. If CDN blocks or errors, word-stagger targets disappear entirely. (Currently no word-stagger is applied, so no visible impact, but stay aware.)
+- **Parallax edge reveal**: if someone bumps `yPercent` in `initParallax()` without bumping CSS `scale` proportionally (rule: scale ≥ 1 + 2 × max|yPercent|/100), the image edges will flash black/white at parallax extremes.
+- **Value wrapper formula is coupled to 3 constants**: `CARD_TRAVEL=500`, `STAGGER=2/3`, `ENTRY_OFFSET=80`. Formula `1247 = (3−1)·CARD_TRAVEL·STAGGER + CARD_TRAVEL + ENTRY_OFFSET = 666.67 + 500 + 80`. Any change to these breaks the no-dead-scroll guarantee until the CSS is re-derived.
+- **`splitWords()` destroys HTML** — do not apply `data-stagger="word"` to `.value-h2` or any element whose child spans carry styling.
+- **New Solution images heavily compressed** — visibly blurry at scale 1.45 parallax. User acknowledged, will replace.
+- **Counter-parallax grid empty-space risk** — `.what-col-body` drifting ±10% could reveal background if col height × SHIFT > available header space (148/314/174 px). Currently safe (body ~779 px, 10 % = 78 px, less than smallest header 148 px), but if SHIFT goes above ~18 it will break.
+- **Counter-parallax col 2 drift direction**: col 2 (`#whatCol2`) has a `.what-btn` "View all use cases" at its bottom. When col 2 drifts DOWN (its direction per the alternating rule), the button may partially clip under the `.what-columns` overflow-hidden boundary. Untested.
+- **Hero logo PNG**: `Logo 2.png` must be transparent-bg PNG; if it has a white/dark bg, it'll clash with the dark nav (`#111111`) and footer (`#111111`) backgrounds. Confirm with user.
+- **No pointer-events on chevron overlay**: already set `pointer-events: none` — any future click handler on the row won't be blocked by the SVG. Don't remove.
+- **Preview tool port 8010**: `.claude/launch.json` pins port 8010 via `npx http-server`. If user's own server also tries 8010, conflict. Currently user runs 8000, so OK.
+- **All Session 7 edge cases still apply** (see above): stale `solutionItems`, `.solution-gap` orphan CSS, mobile What section, Value non-responsive, etc.
