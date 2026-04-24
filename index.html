@@ -434,8 +434,7 @@
     /* ─── CSS vars that scale with breakpoint ────────────────────── */
     :root {
       --mq-h: 100vh;   /* marquee section height       */
-      --mq-travel: 600px;  /* marquee scroll travel (P1 + P2)      */
-      --mq-p1:     600px;   /* phase 1 scroll (vertical rise)        */
+      --mq-travel: 600px;  /* marquee scroll travel (initial, JS overrides)  */
       --mq-font:   400px;   /* marquee font size            */
       --mq-ls:     -4px;    /* marquee letter-spacing       */
     }
@@ -461,7 +460,6 @@
       :root {
         --mq-h:      600px;
         --mq-travel: 1600px;
-        --mq-p1:     400px;
         --mq-font:   235px;
         --mq-ls:     -2px;
       }
@@ -504,7 +502,6 @@
       :root {
         --mq-h:      340px;
         --mq-travel: 1100px;
-        --mq-p1:     250px;
         --mq-font:   118px;
         --mq-ls:     -1px;
       }
@@ -622,7 +619,6 @@
       .marquee-item { padding-left: 40px; }
 
       /* ── Solution ────────────────────────────────────────────── */
-      .solution-gap { display: none; }
       .solution-section {
         position: relative;  /* no sticky on mobile */
         height: auto;
@@ -1057,10 +1053,6 @@
       height: 100vh;
       overflow: hidden;
       border-bottom: 0;
-    }
-
-    .solution-gap {
-      display: none;
     }
 
     .solution-bg {
@@ -1543,8 +1535,7 @@
        ═══════════════════════════════════════════════════════════════ */
     if (reduceMotion) return;
 
-    const heroVisual     = document.querySelector('.hero-visual');
-    const solutionItems  = Array.from(document.querySelectorAll('.solution-stack-item'));
+    const heroVisual = document.querySelector('.hero-visual');
 
     /* Wait for entry animations to finish before applying parallax
        (longest: delay 600ms + duration 800ms = 1400ms) */
