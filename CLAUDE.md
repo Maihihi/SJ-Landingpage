@@ -5,7 +5,7 @@ Single-file landing page for **Infralink** (digital infrastructure platform).
 - **File:** `~/sj-draft-landing/index.html` — all CSS + HTML + JS in one file
 - **Stack:** Pure HTML/CSS/JS, no framework
 - **Local preview:** `python3 -m http.server 8000 --directory /Users/linh/sj-draft-landing`
-- **Remote:** `https://github.com/Chinchin12345/SJ-Landingpage-Test.git` (branch: main)
+- **Remote:** `https://github.com/Maihihi/SJ-Landingpage.git` (branch: main)
 - **Vercel:** `https://sj-draft-landing.vercel.app`
 
 ## Deployment Rules
