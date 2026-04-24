@@ -8,7 +8,7 @@ Single-file landing page for **Infralink** (digital infrastructure platform).
 - **Local preview (Claude tooling):** `npx http-server -p 8010 -c-1` via `.claude/launch.json` → `localhost:8010`
 - **Local preview (user):** may also run own `python3 -m http.server 8000`
 - **Remote:** `https://github.com/Maihihi/SJ-Landingpage.git` (branch: main)
-- **Vercel:** `https://sj-draft-landing.vercel.app`
+- **Vercel:** `https://sj-landingpage.vercel.app` (project `maihihis-projects/sj-landingpage`, auto-deploys from `main`)
 - **Repo path:** `/Users/mai/Documents/15_SJ Landing page/sj-draft-landing`
 
 ## Deployment Rules
